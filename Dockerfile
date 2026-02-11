@@ -14,6 +14,9 @@ RUN npx prisma generate
 # Copy source code
 COPY . .
 
+# Set dummy database URL for build (Next.js prerendering needs it)
+ENV DATABASE_URL="file:./data/dev.db"
+
 # Build the Next.js app
 RUN npm run build
 
