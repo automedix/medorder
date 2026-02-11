@@ -57,7 +57,8 @@ export default function LoginPage() {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 !text-black bg-white"
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 bg-white"
+              style={{ color: '#000000', fontSize: '16px' }}
             >
               <option value="careHome">Pflegeheim</option>
               <option value="admin">Praxis-Admin</option>
@@ -72,8 +73,9 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 !text-black placeholder-gray-400"
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
               placeholder="email@beispiel.de"
+              style={{ color: '#000000', fontSize: '16px' }}
               required
             />
           </div>
@@ -86,8 +88,9 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 !text-black placeholder-gray-400"
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
               placeholder="Ihr Passwort"
+              style={{ color: '#000000', fontSize: '16px' }}
               required
             />
           </div>
