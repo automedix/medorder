@@ -66,8 +66,11 @@ export default function CareHomesPage() {
     return password
   }
 
+  const [error, setError] = useState('')
+
   const handleCreateCareHome = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
     const password = generatePassword()
     
     try {
@@ -90,10 +93,16 @@ export default function CareHomesPage() {
           address: ''
         })
         fetchCareHomes()
-        alert(`Pflegeheim angelegt! Das temporäre Passwort ist: ${password}\n\nBitte notieren und sicher übermitteln!`)
+        alert(`Pflegeheim angelegt!\n\nE-Mail: ${newCareHome.email}\nPasswort: ${password}\n\nBitte notieren und sicher übermitteln!`)
+      } else if (res.status === 401) {
+        setError('Nicht autorisiert. Bitte erneut anmelden.')
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Fehler beim Anlegen')
       }
     } catch (error) {
       console.error('Fehler:', error)
+      setError('Verbindungsfehler')
     }
   }
 
@@ -130,6 +139,13 @@ export default function CareHomesPage() {
         {/* Neues Pflegeheim Formular */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h2 className="text-lg font-semibold mb-4">Neues Pflegeheim anlegen</h2>
+          
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+              {error}
+            </div>
+          )}
+          
           <form onSubmit={handleCreateCareHome} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
