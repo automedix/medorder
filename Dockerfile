@@ -1,27 +1,46 @@
-FROM node:20-alpine
+# Build stage
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Install all dependencies (including devDependencies)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
-# Copy prisma schema
+# Copy prisma schema and generate client
 COPY prisma ./prisma/
 RUN npx prisma generate
 
-# Copy built app
-COPY .next ./.next
-COPY next.config.* ./
-# Copy public folder if it exists (optional)
-RUN if [ -d "public" ]; then cp -r public ./public; fi
+# Copy source code
+COPY . .
 
-# Create data directory
-RUN mkdir -p /app/data
+# Build the Next.js app
+RUN npm run build
 
-EXPOSE 3000
+# Production stage
+FROM node:20-alpine AS runner
+
+WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+
+# Install only production dependencies
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy prisma schema and generate client
+COPY prisma ./prisma/
+RUN npx prisma generate
+
+# Copy built app from builder stage
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/next.config.* ./
+COPY --from=builder /app/public ./public 2>/dev/null || true
+
+# Create data directory for SQLite
+RUN mkdir -p /app/data
+
+EXPOSE 3000
 
 CMD ["npm", "start"]
