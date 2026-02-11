@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install all dependencies (including devDependencies)
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy prisma schema and generate client
 COPY prisma ./prisma/
@@ -33,7 +33,7 @@ ENV PORT=3000
 
 # Install only production dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copy prisma schema and generate client
 COPY prisma ./prisma/
@@ -42,7 +42,8 @@ RUN npx prisma generate
 # Copy built app from builder stage
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/next.config.* ./
-COPY --from=builder /app/public ./public 2>/dev/null || true
+# Copy public folder if it exists
+RUN if [ -d "/app/public" ]; then cp -r /app/public ./public; fi
 
 # Create data directory
 RUN mkdir -p /app/data
