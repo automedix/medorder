@@ -1,0 +1,66 @@
+/* MedOrder Custom Design - Hausärzte im Grillepark */
+
+:root {
+  --primary-color: #8B1C3F;    /* Burgundy aus Logo */
+  --secondary-color: #1E3A5F;  /* Dunkelblau */
+  --accent-color: #C9A227;     /* Gold-Gelb */
+  --bg-light: #F0F4F8;         /* Hellblau-Grau */
+  --bg-white: #FFFFFF;
+  --text-dark: #2C3E50;
+  --text-light: #6C757D;
+}
+
+body {
+  background: linear-gradient(135deg, #F0F4F8 0%, #E8F4F8 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-box {
+  background: white;
+  border-top: 4px solid var(--primary-color);
+  box-shadow: 0 4px 20px rgba(139, 28, 63, 0.15);
+}
+
+h1 {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+button, .btn {
+  background: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+button:hover, .btn:hover {
+  background: #6B1530;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 28, 63, 0.3);
+}
+
+.header {
+  background: var(--primary-color);
+}
+
+.card {
+  border-left: 3px solid var(--accent-color);
+}
+
+.success { 
+  background: #D4EDDA; 
+  border-left: 4px solid var(--accent-color);
+}
+
+.error {
+  background: #F8D7DA;
+  border-left: 4px solid var(--primary-color);
+}
+
+.logo-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo-container img {
+  max-width: 250px;
+  height: auto;
+}

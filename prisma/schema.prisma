@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model CareHome {
+  id             String    @id @default(uuid())
+  name           String
+  email          String    @unique
+  passwordHash   String
+  contactPerson  String
+  phone          String?
+  address        String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  patients       Patient[]
+  orders         Order[]
+  
+  @@map("care_homes")
+}
+
+model Patient {
+  id            String    @id @default(uuid())
+  careHomeId    String
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  careHome      CareHome  @relation(fields: [careHomeId], references: [id])
+  orders        Order[]
+  
+  @@map("patients")
+}
+
+model Category {
+  id           String    @id @default(uuid())
+  name         String
+  description  String?
+  sortOrder    Int       @default(0)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  
+  products     Product[]
+  
+  @@map("categories")
+}
+
+model Product {
+  id            String          @id @default(uuid())
+  categoryId    String
+  name          String
+  description   String?
+  articleNumber String?
+  unit          String          @default("Stück")
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  category      Category        @relation(fields: [categoryId], references: [id])
+  orderItems    OrderItem[]
+  prices        ProductPrice[]
+  
+  @@map("products")
+}
+
+model ProductPrice {
+  id          String   @id @default(uuid())
+  productId   String
+  pzn         String   // Pharmazentralnummer
+  supplier    String   // Anbietername (z.B. "Apotheke Müller", "MediMax")
+  price       Decimal  @db.Decimal(10, 2)  // Preis in EUR
+  packSize    String   // Packungsgröße (z.B. "50 Stück", "10x2 Stück")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@map("product_prices")
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  careHomeId    String
+  patientId     String
+  orderNumber   String      @unique
+  status        OrderStatus @default(PENDING)
+  totalItems    Int
+  notes         String?
+  completedAt   DateTime?
+  completedBy   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  careHome      CareHome    @relation(fields: [careHomeId], references: [id])
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  items         OrderItem[]
+  
+  @@map("orders")
+}
+
+model OrderItem {
+  id            String   @id @default(uuid())
+  orderId       String
+  productId     String
+  quantity      Int
+  productName   String
+  productUnit   String
+  
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id])
+  
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  
+  @@map("admins")
+}
