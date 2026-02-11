@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth/next'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import LogoutButton from '@/components/LogoutButton'
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions as any)
@@ -15,8 +16,11 @@ export default async function AdminPage() {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-800">MedOrder - Praxis-Admin</h1>
-          <div className="text-sm text-gray-600">
-            {(session.user as any).name}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600">
+              {(session.user as any).name}
+            </div>
+            <LogoutButton />
           </div>
         </div>
       </header>
