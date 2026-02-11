@@ -14,10 +14,11 @@ RUN npx prisma generate
 # Copy source code
 COPY . .
 
-# Create data directory and dummy database for build
+# Create data directory and database for build
 RUN mkdir -p /app/data
-ENV DATABASE_URL="file:./data/dev.db"
+ENV DATABASE_URL="file:/app/data/build.db"
 RUN npx prisma migrate deploy || true
+RUN npx prisma db push || true
 
 # Build the Next.js app
 RUN npm run build
@@ -32,7 +33,7 @@ ENV PORT=3000
 
 # Install only production dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy prisma schema and generate client
 COPY prisma ./prisma/
@@ -43,7 +44,7 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/next.config.* ./
 COPY --from=builder /app/public ./public 2>/dev/null || true
 
-# Create data directory for SQLite
+# Create data directory
 RUN mkdir -p /app/data
 
 EXPOSE 3000

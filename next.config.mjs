@@ -7,11 +7,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Disable static generation for API routes
-  experimental: {
-    workerThreads: false,
-    cpus: 1
-  }
 };
 
 export default nextConfig;
