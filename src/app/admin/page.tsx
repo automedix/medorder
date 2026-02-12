@@ -1,13 +1,11 @@
-import { getServerSession } from 'next-auth/next'
+import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import LogoutButton from '@/components/LogoutButton'
 
 export default async function AdminPage() {
-  const session = await getServerSession(authOptions as any)
+  const session = await getSession()
   
-  if (!session || (session.user as any).role !== 'admin') {
+  if (!session || session.role !== 'admin') {
     redirect('/login')
   }
 
@@ -15,12 +13,18 @@ export default async function AdminPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">MedOrder - Praxis-Admin</h1>
+          <h1 className="text-xl font-bold text-gray-800">
+            MedOrder - Praxis-Admin
+          </h1>
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-600">
-              {(session.user as any).name}
+              {session.name}
             </div>
-            <LogoutButton />
+            <form action="/api/logout" method="POST">
+              <button type="submit" className="text-sm text-red-600 hover:text-red-800">
+                Abmelden
+              </button>
+            </form>
           </div>
         </div>
       </header>

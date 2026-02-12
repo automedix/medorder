@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -17,22 +16,30 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const result = await signIn('credentials', {
-      email,
-      password,
-      role,
-      redirect: false
-    })
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role })
+      })
 
-    if (result?.error) {
-      setError('Ungültige Anmeldedaten')
-      setLoading(false)
-    } else {
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Anmeldung fehlgeschlagen')
+        setLoading(false)
+        return
+      }
+
+      // Weiterleitung basierend auf Rolle
       if (role === 'admin') {
         router.push('/admin')
       } else {
         router.push('/dashboard')
       }
+    } catch (err) {
+      setError('Verbindungsfehler')
+      setLoading(false)
     }
   }
 

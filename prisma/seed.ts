@@ -45,20 +45,19 @@ async function main() {
   ]
 
   for (const cat of categories) {
-    await prisma.category.upsert({
-      where: { name: cat.name },
-      update: {},
-      create: cat
-    })
+    const exists = await prisma.category.findFirst({ where: { name: cat.name } })
+    if (!exists) {
+      await prisma.category.create({ data: cat })
+    }
   }
   console.log('Categories created')
 
   // Get category IDs
-  const catPflaster = await prisma.category.findUnique({ where: { name: 'Pflaster und Wundauflagen' } })
-  const catVerbaende = await prisma.category.findUnique({ where: { name: 'Verbände und Binden' } })
-  const catDesinfektion = await prisma.category.findUnique({ where: { name: 'Desinfektion' } })
-  const catSpritzen = await prisma.category.findUnique({ where: { name: 'Spritzen und Kanülen' } })
-  const catHandschuhe = await prisma.category.findUnique({ where: { name: 'Handschuhe und Schutz' } })
+  const catPflaster = await prisma.category.findFirst({ where: { name: 'Pflaster und Wundauflagen' } })
+  const catVerbaende = await prisma.category.findFirst({ where: { name: 'Verbände und Binden' } })
+  const catDesinfektion = await prisma.category.findFirst({ where: { name: 'Desinfektion' } })
+  const catSpritzen = await prisma.category.findFirst({ where: { name: 'Spritzen und Kanülen' } })
+  const catHandschuhe = await prisma.category.findFirst({ where: { name: 'Handschuhe und Schutz' } })
 
   // Create sample products
   const products = [
@@ -94,19 +93,18 @@ async function main() {
   ]
 
   for (const prod of products) {
-    await prisma.product.upsert({
-      where: { name: prod.name },
-      update: {},
-      create: prod
-    })
+    const exists = await prisma.product.findFirst({ where: { name: prod.name } })
+    if (!exists) {
+      await prisma.product.create({ data: prod })
+    }
   }
   console.log('Products created')
 
   // Create sample prices for some products
-  const kompressen = await prisma.product.findUnique({ where: { name: 'Mullkompressen steril 10x10 cm' } })
-  const spritzen5ml = await prisma.product.findUnique({ where: { name: 'Einmalspritzen 5 ml' } })
-  const handschuheM = await prisma.product.findUnique({ where: { name: 'Untersuchungshandschuhe M' } })
-  const sterillium = await prisma.product.findUnique({ where: { name: 'Sterillium 500 ml' } })
+  const kompressen = await prisma.product.findFirst({ where: { name: 'Mullkompressen steril 10x10 cm' } })
+  const spritzen5ml = await prisma.product.findFirst({ where: { name: 'Einmalspritzen 5 ml' } })
+  const handschuheM = await prisma.product.findFirst({ where: { name: 'Untersuchungshandschuhe M' } })
+  const sterillium = await prisma.product.findFirst({ where: { name: 'Sterillium 500 ml' } })
 
   const samplePrices = [
     // Mullkompressen
@@ -132,10 +130,11 @@ async function main() {
   ]
 
   for (const price of samplePrices) {
-    await prisma.productPrice.createMany({
-      skipDuplicates: true,
-      data: price
-    })
+    try {
+      await prisma.productPrice.create({ data: price })
+    } catch (e) {
+      // Price already exists, skip
+    }
   }
   console.log('Sample prices created')
 
