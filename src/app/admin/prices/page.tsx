@@ -29,6 +29,7 @@ export default function PricesPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingPrice, setEditingPrice] = useState<ProductPrice | null>(null)
   const [formData, setFormData] = useState({
     productId: '',
     pzn: '',
@@ -46,13 +47,8 @@ export default function PricesPage() {
       const res = await fetch('/api/auth/session')
       const data = await res.json()
       
-      if (!data.session) {
+      if (!data.session || data.session.role !== 'admin') {
         router.push('/login')
-        return
-      }
-      
-      if (data.session.role !== 'admin') {
-        router.push('/dashboard')
         return
       }
       
@@ -70,7 +66,7 @@ export default function PricesPage() {
       const res = await fetch('/api/prices')
       if (res.ok) {
         const data = await res.json()
-        setPrices(data)
+        setPrices(data.filter((p: ProductPrice) => p.isActive))
       }
     } catch (error) {
       console.error('Error fetching prices:', error)
@@ -103,19 +99,71 @@ export default function PricesPage() {
       })
 
       if (res.ok) {
-        setFormData({
-          productId: '',
-          pzn: '',
-          supplier: '',
-          price: '',
-          packSize: '',
-        })
-        setShowForm(false)
+        resetForm()
         fetchPrices()
       }
     } catch (error) {
       console.error('Error creating price:', error)
     }
+  }
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingPrice) return
+    
+    try {
+      const res = await fetch(`/api/prices?id=${editingPrice.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pzn: formData.pzn,
+          supplier: formData.supplier,
+          price: parseFloat(formData.price),
+          packSize: formData.packSize,
+        }),
+      })
+
+      if (res.ok) {
+        resetForm()
+        fetchPrices()
+      }
+    } catch (error) {
+      console.error('Error updating price:', error)
+    }
+  }
+
+  const handleDelete = async (priceId: string) => {
+    if (!confirm('Preis wirklich löschen?')) return
+    
+    try {
+      const res = await fetch(`/api/prices?id=${priceId}`, {
+        method: 'DELETE',
+      })
+
+      if (res.ok) {
+        fetchPrices()
+      }
+    } catch (error) {
+      console.error('Error deleting price:', error)
+    }
+  }
+
+  const startEdit = (price: ProductPrice) => {
+    setEditingPrice(price)
+    setFormData({
+      productId: price.product.name,
+      pzn: price.pzn,
+      supplier: price.supplier,
+      price: price.price.toString(),
+      packSize: price.packSize,
+    })
+    setShowForm(true)
+  }
+
+  const resetForm = () => {
+    setFormData({ productId: '', pzn: '', supplier: '', price: '', packSize: '' })
+    setShowForm(false)
+    setEditingPrice(null)
   }
 
   const formatPrice = (price: number) => {
@@ -133,25 +181,16 @@ export default function PricesPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">
-            Preisliste verwalten
-          </h1>
-          <div className="flex gap-4">
-            <Link href="/admin" className="text-blue-600 hover:text-blue-800">
-              ← Zurück zum Admin
-            </Link>
-          </div>
+          <h1 className="text-xl font-bold text-gray-800">Preisliste verwalten</h1>
+          <Link href="/admin" className="text-blue-600 hover:text-blue-800">← Zurück zum Admin</Link>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6 flex justify-between items-center">
-          <p className="text-gray-600">
-            Hier können Sie PZNs, Anbieter und Preise für Produkte hinterlegen.
-            Bei Bestellungen werden automatisch die 3 günstigsten Anbieter angezeigt.
-          </p>
+          <p className="text-gray-600">PZNs, Anbieter und Preise für Produkte verwalten.</p>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => { editingPrice ? resetForm() : setShowForm(!showForm) }}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             {showForm ? 'Abbrechen' : '+ Preis hinzufügen'}
@@ -160,96 +199,76 @@ export default function PricesPage() {
 
         {showForm && (
           <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 className="text-lg font-semibold mb-4">Neuen Preis anlegen</h2>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 className="text-lg font-semibold mb-4">
+              {editingPrice ? 'Preis bearbeiten' : 'Neuen Preis anlegen'}
+            </h2>
+            <form onSubmit={editingPrice ? handleUpdate : handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {!editingPrice && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Produkt *</label>
+                  <select
+                    required
+                    value={formData.productId}
+                    onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                    className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  >
+                    <option value="">Bitte wählen</option>
+                    {products.map((product) => (
+                      <option key={product.id} value={product.id}>{product.name} ({product.unit})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Produkt *
-                </label>
-                <select
-                  required
-                  value={formData.productId}
-                  onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
-                  style={{ color: '#111827' }}
-                >
-                  <option value="">Bitte wählen</option>
-                  {products.map((product) => (
-                    <option key={product.id} value={product.id} style={{ color: '#111827' }}>
-                      {product.name} ({product.unit})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  PZN (Pharmazentralnummer) *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">PZN *</label>
                 <input
-                  type="text"
-                  required
-                  value={formData.pzn}
+                  type="text" required value={formData.pzn}
                   onChange={(e) => setFormData({ ...formData, pzn: e.target.value })}
                   className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
-                  style={{ color: '#111827' }}
                   placeholder="z.B. 12345678"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Anbieter/Lieferant *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Anbieter *</label>
                 <input
-                  type="text"
-                  required
-                  value={formData.supplier}
+                  type="text" required value={formData.supplier}
                   onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
                   className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
-                  style={{ color: '#111827' }}
                   placeholder="z.B. Apotheke Müller"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Preis (EUR) *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preis (EUR) *</label>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  value={formData.price}
+                  type="number" step="0.01" min="0" required value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
-                  style={{ color: '#111827' }}
                   placeholder="0.00"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Packungsgröße
-                </label>
+              <div className={editingPrice ? 'md:col-span-2' : 'md:col-span-1'}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Packungsgröße</label>
                 <input
-                  type="text"
-                  value={formData.packSize}
+                  type="text" value={formData.packSize}
                   onChange={(e) => setFormData({ ...formData, packSize: e.target.value })}
                   className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
-                  style={{ color: '#111827' }}
-                  placeholder="z.B. 50 Stück, 10x2 Stück"
+                  placeholder="z.B. 50 Stück"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <button
-                  type="submit"
-                  className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-                >
-                  Speichern
+                <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                  {editingPrice ? 'Aktualisieren' : 'Speichern'}
                 </button>
+                {editingPrice && (
+                  <button type="button" onClick={resetForm} className="ml-2 px-4 py-2 border rounded hover:bg-gray-50">
+                    Abbrechen
+                  </button>
+                )}
               </div>
             </form>
           </div>
@@ -264,16 +283,12 @@ export default function PricesPage() {
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Anbieter</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Packung</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Preis</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Aktionen</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {prices.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                    Noch keine Preise hinterlegt.
-                  </td>
-                </tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">Noch keine Preise hinterlegt.</td></tr>
               ) : (
                 prices.map((price) => (
                   <tr key={price.id} className="hover:bg-gray-50">
@@ -284,19 +299,10 @@ export default function PricesPage() {
                     <td className="px-4 py-3 font-mono text-sm">{price.pzn}</td>
                     <td className="px-4 py-3">{price.supplier}</td>
                     <td className="px-4 py-3 text-sm">{price.packSize || '-'}</td>
-                    <td className="px-4 py-3 font-semibold text-green-700">
-                      {formatPrice(price.price)}
-                    </td>
+                    <td className="px-4 py-3 font-semibold text-green-700">{formatPrice(price.price)}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs rounded ${
-                          price.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {price.isActive ? 'Aktiv' : 'Inaktiv'}
-                      </span>
+                      <button onClick={() => startEdit(price)} className="text-blue-600 hover:text-blue-800 text-sm mr-3">Bearbeiten</button>
+                      <button onClick={() => handleDelete(price.id)} className="text-red-600 hover:text-red-800 text-sm">Löschen</button>
                     </td>
                   </tr>
                 ))
