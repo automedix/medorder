@@ -83,7 +83,7 @@ export default function PatientsPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">Patienten</h1>
+          <h1 className="text-xl font-bold" style={{color: '#111827'}}>Patienten</h1>
           <div className="space-x-4">
             <Link href="/dashboard" className="text-blue-600 hover:underline">
               ← Zurück zum Dashboard
@@ -113,45 +113,45 @@ export default function PatientsPage() {
 
         {showForm && (
           <div className="mb-8 bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-4">Neuen Patienten anlegen</h2>
+            <h2 className="text-lg font-semibold mb-4" style={{color: '#111827'}}>Neuen Patienten anlegen</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1" style={{color: '#374151'}}>
                     Vorname *
                   </label>
                   <input
                     type="text"
                     value={newPatient.firstName}
                     onChange={(e) => setNewPatient({...newPatient, firstName: e.target.value})}
-                    className="w-full p-2 border rounded bg-white" style={{color: "#111827"}}
+                    className="w-full p-2 border rounded bg-white"
                     style={{ color: '#111827' }}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1" style={{color: '#374151'}}>
                     Nachname *
                   </label>
                   <input
                     type="text"
                     value={newPatient.lastName}
                     onChange={(e) => setNewPatient({...newPatient, lastName: e.target.value})}
-                    className="w-full p-2 border rounded bg-white" style={{color: "#111827"}}
+                    className="w-full p-2 border rounded bg-white"
                     style={{ color: '#111827' }}
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium mb-1" style={{color: '#374151'}}>
                   Geburtsdatum *
                 </label>
                 <input
                   type="date"
                   value={newPatient.dateOfBirth}
                   onChange={(e) => setNewPatient({...newPatient, dateOfBirth: e.target.value})}
-                  className="w-full p-2 border rounded bg-white" style={{color: "#111827"}}
+                  className="w-full p-2 border rounded bg-white"
                   style={{ color: '#111827' }}
                   required
                 />
@@ -170,24 +170,24 @@ export default function PatientsPage() {
           <table className="w-full">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-3 text-left">Name</th>
-                <th className="px-4 py-3 text-left">Geburtsdatum</th>
+                <th className="px-4 py-3 text-left" style={{color: '#111827'}}>Name</th>
+                <th className="px-4 py-3 text-left" style={{color: '#111827'}}>Geburtsdatum</th>
               </tr>
             </thead>
             <tbody>
               {patients.map((patient) => (
                 <tr key={patient.id} className="border-t">
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" style={{color: '#111827'}}>
                     {patient.lastName}, {patient.firstName}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" style={{color: '#111827'}}>
                     {new Date(patient.dateOfBirth).toLocaleDateString('de-DE')}
                   </td>
                 </tr>
               ))}
               {patients.length === 0 && (
                 <tr>
-                  <td colSpan={2} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={2} className="px-4 py-8 text-center" style={{color: '#6b7280'}}>
                     Noch keine Patienten angelegt
                   </td>
                 </tr>

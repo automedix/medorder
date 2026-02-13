@@ -10,7 +10,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const careHomeId = session.id
+  // Fix: userId statt id verwenden
+  const careHomeId = session.userId || (session as any).id
   
   try {
     const body = await request.json()
@@ -100,7 +101,6 @@ export async function POST(request: NextRequest) {
       })
     } catch (emailErr) {
       console.error('Email failed:', emailErr)
-      // Don't fail the order if email fails
     }
 
     return NextResponse.json({ orderNumber: order.orderNumber })
@@ -120,11 +120,10 @@ export async function GET(request: NextRequest) {
   try {
     let where: any = {}
     
-    // Pflegeheim sieht nur eigene Bestellungen
+    // Fix: userId statt id
     if (session.role === 'careHome') {
-      where.careHomeId = session.id
+      where.careHomeId = session.userId || (session as any).id
     }
-    // Admin sieht alle (oder kann filtern)
 
     const orders = await prisma.order.findMany({
       where,
