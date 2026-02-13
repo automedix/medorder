@@ -13,11 +13,11 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">
+          <h1 className="text-xl font-bold" style={{color: '#111827'}}>
             MedOrder - Pflegeheim Dashboard
           </h1>
           <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm" style={{color: '#374151'}}>
               {session.name}
             </div>
             <form action="/api/logout" method="POST">
@@ -35,8 +35,8 @@ export default async function DashboardPage() {
           <Link href="/order/new" className="block h-full">
             <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">🛒</div>
-              <h2 className="text-lg font-semibold mb-2">Neue Bestellung</h2>
-              <p className="text-gray-600 flex-grow">Verbandmaterial für Patienten bestellen</p>
+              <h2 className="text-lg font-semibold mb-2" style={{color: '#111827'}}>Neue Bestellung</h2>
+              <p className="flex-grow" style={{color: '#374151'}}>Verbandmaterial für Patienten bestellen</p>
             </div>
           </Link>
 
@@ -44,8 +44,8 @@ export default async function DashboardPage() {
           <Link href="/orders" className="block h-full">
             <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">📋</div>
-              <h2 className="text-lg font-semibold mb-2">Meine Bestellungen</h2>
-              <p className="text-gray-600 flex-grow">Bestellhistorie und Status einsehen</p>
+              <h2 className="text-lg font-semibold mb-2" style={{color: '#111827'}}>Meine Bestellungen</h2>
+              <p className="flex-grow" style={{color: '#374151'}}>Bestellhistorie und Status einsehen</p>
             </div>
           </Link>
 
@@ -53,16 +53,16 @@ export default async function DashboardPage() {
           <Link href="/patients" className="block h-full">
             <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">👥</div>
-              <h2 className="text-lg font-semibold mb-2">Patienten</h2>
-              <p className="text-gray-600 flex-grow">Patienten verwalten und anlegen</p>
+              <h2 className="text-lg font-semibold mb-2" style={{color: '#111827'}}>Patienten</h2>
+              <p className="flex-grow" style={{color: '#374151'}}>Patienten verwalten und anlegen</p>
             </div>
           </Link>
         </div>
 
         {/* Schnell-Info */}
         <div className="mt-8 bg-blue-50 p-6 rounded-lg">
-          <h3 className="font-semibold text-blue-800 mb-2">So funktioniert's:</h3>
-          <ol className="list-decimal list-inside space-y-2 text-blue-700">
+          <h3 className="font-semibold mb-2" style={{color: '#1e40af'}}>So funktioniert's:</h3>
+          <ol className="list-decimal list-inside space-y-2" style={{color: '#1d4ed8'}}>
             <li>Legen Sie zuerst einen Patienten an (oder wählen Sie einen vorhandenen)</li>
             <li>Wählen Sie die benötigten Verbandmaterialien aus dem Sortiment</li>
             <li>Senden Sie die Bestellung an die Praxis</li>

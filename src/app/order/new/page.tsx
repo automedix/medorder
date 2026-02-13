@@ -133,7 +133,7 @@ export default function NewOrderPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">Neue Bestellung</h1>
+          <h1 className="text-xl font-bold" style={{color: '#111827'}}>Neue Bestellung</h1>
           <Link href="/dashboard" className="text-blue-600 hover:underline">
             ← Abbrechen
           </Link>
@@ -143,13 +143,13 @@ export default function NewOrderPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Progress */}
         <div className="mb-8 flex items-center space-x-4">
-          <div className={`px-4 py-2 rounded ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+          <div className={`px-4 py-2 rounded ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} style={{color: step >= 1 ? 'white' : '#374151'}}>
             1. Patient wählen
           </div>
-          <div className={`px-4 py-2 rounded ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+          <div className={`px-4 py-2 rounded ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} style={{color: step >= 2 ? 'white' : '#374151'}}>
             2. Produkte wählen
           </div>
-          <div className={`px-4 py-2 rounded ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+          <div className={`px-4 py-2 rounded ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`} style={{color: step >= 3 ? 'white' : '#374151'}}>
             3. Überprüfen
           </div>
         </div>
@@ -157,11 +157,11 @@ export default function NewOrderPage() {
         {/* Schritt 1: Patient wählen */}
         {step === 1 && (
           <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-4">Patient auswählen</h2>
+            <h2 className="text-lg font-semibold mb-4" style={{color: '#111827'}}>Patient auswählen</h2>
             
             {patients.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">Noch keine Patienten angelegt</p>
+                <p className="mb-4" style={{color: '#374151'}}>Noch keine Patienten angelegt</p>
                 <Link href="/patients" className="text-blue-600 hover:underline">
                   Zuerst Patienten anlegen →
                 </Link>
@@ -179,7 +179,7 @@ export default function NewOrderPage() {
                       selectedPatient?.id === patient.id ? 'border-blue-500 bg-blue-50' : ''
                     }`}
                   >
-                    <div className="font-medium">{patient.lastName}, {patient.firstName}</div>
+                    <div className="font-medium" style={{color: '#111827'}}>{patient.lastName}, {patient.firstName}</div>
                   </button>
                 ))}
               </div>
@@ -190,18 +190,17 @@ export default function NewOrderPage() {
         {/* Schritt 2: Produkte wählen */}
         {step === 2 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Produktliste */}
             <div className="lg:col-span-2 space-y-6">
               {categories.map(category => (
                 <div key={category.id} className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="font-semibold text-lg mb-3">{category.name}</h3>
+                  <h3 className="font-semibold text-lg mb-3" style={{color: '#111827'}}>{category.name}</h3>
                   <div className="space-y-2">
                     {category.products.map(product => (
                       <div key={product.id} className="flex items-center justify-between p-2 border rounded">
                         <div>
-                          <div className="font-medium">{product.name}</div>
+                          <div className="font-medium" style={{color: '#111827'}}>{product.name}</div>
                           {product.description && (
-                            <div className="text-sm text-gray-500">{product.description}</div>
+                            <div className="text-sm" style={{color: '#6b7280'}}>{product.description}</div>
                           )}
                         </div>
                         <div className="flex items-center space-x-2">
@@ -210,9 +209,10 @@ export default function NewOrderPage() {
                             min="1"
                             defaultValue="1"
                             className="w-16 p-1 border rounded text-center"
+                            style={{color: '#111827'}}
                             id={`qty-${product.id}`}
                           />
-                          <span className="text-sm text-gray-500">{product.unit}</span>
+                          <span className="text-sm" style={{color: '#6b7280'}}>{product.unit}</span>
                           <button
                             onClick={() => {
                               const input = document.getElementById(`qty-${product.id}`) as HTMLInputElement
@@ -230,19 +230,18 @@ export default function NewOrderPage() {
               ))}
             </div>
 
-            {/* Warenkorb */}
             <div className="bg-white p-4 rounded-lg shadow h-fit">
-              <h3 className="font-semibold mb-3">Warenkorb</h3>
+              <h3 className="font-semibold mb-3" style={{color: '#111827'}}>Warenkorb</h3>
               {cart.length === 0 ? (
-                <p className="text-gray-500">Noch keine Produkte</p>
+                <p style={{color: '#6b7280'}}>Noch keine Produkte</p>
               ) : (
                 <>
                   <div className="space-y-2 mb-4">
                     {cart.map(item => (
                       <div key={item.productId} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                         <div>
-                          <div className="font-medium">{item.name}</div>
-                          <div className="text-sm text-gray-500">{item.quantity} {item.unit}</div>
+                          <div className="font-medium" style={{color: '#111827'}}>{item.name}</div>
+                          <div className="text-sm" style={{color: '#6b7280'}}>{item.quantity} {item.unit}</div>
                         </div>
                         <button
                           onClick={() => removeFromCart(item.productId)}
@@ -268,31 +267,32 @@ export default function NewOrderPage() {
         {/* Schritt 3: Überprüfen */}
         {step === 3 && selectedPatient && (
           <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-4">Bestellung überprüfen</h2>
+            <h2 className="text-lg font-semibold mb-4" style={{color: '#111827'}}>Bestellung überprüfen</h2>
             
             <div className="mb-4 p-3 bg-gray-50 rounded">
-              <div className="font-medium">Patient:</div>
-              <div>{selectedPatient.lastName}, {selectedPatient.firstName}</div>
+              <div className="font-medium" style={{color: '#111827'}}>Patient:</div>
+              <div style={{color: '#374151'}}>{selectedPatient.lastName}, {selectedPatient.firstName}</div>
             </div>
 
             <div className="mb-4">
-              <div className="font-medium mb-2">Produkte:</div>
+              <div className="font-medium mb-2" style={{color: '#111827'}}>Produkte:</div>
               <div className="space-y-1">
                 {cart.map(item => (
                   <div key={item.productId} className="flex justify-between p-2 border rounded">
-                    <span>{item.name}</span>
-                    <span>{item.quantity} {item.unit}</span>
+                    <span style={{color: '#111827'}}>{item.name}</span>
+                    <span style={{color: '#374151'}}>{item.quantity} {item.unit}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="block font-medium mb-1">Hinweis (optional):</label>
+              <label className="block font-medium mb-1" style={{color: '#111827'}}>Hinweis (optional):</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full p-2 border rounded"
+                style={{color: '#111827'}}
                 rows={3}
                 placeholder="Besondere Hinweise zur Bestellung..."
               />
@@ -302,6 +302,7 @@ export default function NewOrderPage() {
               <button
                 onClick={() => setStep(2)}
                 className="px-4 py-2 border rounded hover:bg-gray-50"
+                style={{color: '#374151'}}
               >
                 ← Zurück
               </button>
@@ -319,11 +320,11 @@ export default function NewOrderPage() {
         {step === 4 && (
           <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow text-center">
             <div className="text-5xl mb-4">✅</div>
-            <h2 className="text-xl font-semibold mb-2">Bestellung erfolgreich!</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-xl font-semibold mb-2" style={{color: '#111827'}}>Bestellung erfolgreich!</h2>
+            <p className="mb-4" style={{color: '#374151'}}>
               Ihre Bestellung wurde an die Praxis gesendet.
             </p>
-            <div className="text-2xl font-mono bg-gray-100 p-4 rounded mb-6">
+            <div className="text-2xl font-mono bg-gray-100 p-4 rounded mb-6" style={{color: '#111827'}}>
               Bestellnummer: {orderNumber}
             </div>
             <div className="space-x-4">
@@ -338,6 +339,7 @@ export default function NewOrderPage() {
                   setSelectedPatient(null)
                 }}
                 className="px-4 py-2 border rounded hover:bg-gray-50"
+                style={{color: '#374151'}}
               >
                 Neue Bestellung
               </button>
