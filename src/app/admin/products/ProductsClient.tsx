@@ -81,6 +81,12 @@ export default function ProductsClient() {
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    
+    if (!newProduct.name || !newProduct.categoryId) {
+      setError('Bitte Produktname und Kategorie auswählen')
+      return
+    }
+    
     try {
       const res = await fetch('/api/products', {
         method: 'POST',
@@ -90,9 +96,13 @@ export default function ProductsClient() {
       if (res.ok) {
         setNewProduct({ name: '', description: '', articleNumber: '', unit: 'Stück', categoryId: '' })
         fetchData()
+        alert('Produkt erfolgreich angelegt!')
+      } else if (res.status === 401) {
+        setError('Nicht autorisiert. Bitte erneut anmelden.')
+        setTimeout(() => router.push('/login'), 2000)
       } else {
         const data = await res.json()
-        setError(data.error || 'Fehler beim Anlegen')
+        setError(data.error || 'Fehler beim Anlegen des Produkts')
       }
     } catch (err) {
       setError('Verbindungsfehler')
