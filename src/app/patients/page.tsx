@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -13,49 +12,70 @@ interface Patient {
 }
 
 export default function PatientsPage() {
-  const { data: session, status } = useSession()
   const router = useRouter()
   const [patients, setPatients] = useState<Patient[]>([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [newPatient, setNewPatient] = useState({
     firstName: '',
     lastName: '',
     dateOfBirth: ''
   })
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
-    if (status === 'authenticated') {
-      fetchPatients()
-    }
-  }, [status])
+    fetchPatients()
+  }, [])
 
   const fetchPatients = async () => {
-    const res = await fetch('/api/patients')
-    if (res.ok) {
-      const data = await res.json()
-      setPatients(data)
+    try {
+      const res = await fetch('/api/patients')
+      if (res.ok) {
+        const data = await res.json()
+        setPatients(data)
+      } else if (res.status === 401) {
+        router.push('/login')
+      } else {
+        setError('Fehler beim Laden der Patienten')
+      }
+    } catch (error) {
+      setError('Verbindungsfehler')
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch('/api/patients', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newPatient)
-    })
+    setError('')
+    setSuccess('')
     
-    if (res.ok) {
-      setNewPatient({ firstName: '', lastName: '', dateOfBirth: '' })
-      setShowForm(false)
-      fetchPatients()
+    try {
+      const res = await fetch('/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPatient)
+      })
+      
+      if (res.ok) {
+        setNewPatient({ firstName: '', lastName: '', dateOfBirth: '' })
+        setShowForm(false)
+        setSuccess('Patient erfolgreich angelegt!')
+        fetchPatients()
+        setTimeout(() => setSuccess(''), 3000)
+      } else if (res.status === 401) {
+        router.push('/login')
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Fehler beim Speichern')
+      }
+    } catch (error) {
+      setError('Verbindungsfehler')
     }
   }
 
-  if (status === 'loading') {
+  if (loading) {
     return <div className="p-8">Laden...</div>
   }
 
@@ -73,6 +93,17 @@ export default function PatientsPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg">
+            {success}
+          </div>
+        )}
+
         <button
           onClick={() => setShowForm(!showForm)}
           className="mb-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -87,38 +118,41 @@ export default function PatientsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vorname
+                    Vorname *
                   </label>
                   <input
                     type="text"
                     value={newPatient.firstName}
                     onChange={(e) => setNewPatient({...newPatient, firstName: e.target.value})}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded text-gray-900 bg-white"
+                    style={{ color: '#111827' }}
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nachname
+                    Nachname *
                   </label>
                   <input
                     type="text"
                     value={newPatient.lastName}
                     onChange={(e) => setNewPatient({...newPatient, lastName: e.target.value})}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded text-gray-900 bg-white"
+                    style={{ color: '#111827' }}
                     required
                   />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Geburtsdatum
+                  Geburtsdatum *
                 </label>
                 <input
                   type="date"
                   value={newPatient.dateOfBirth}
                   onChange={(e) => setNewPatient({...newPatient, dateOfBirth: e.target.value})}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded text-gray-900 bg-white"
+                  style={{ color: '#111827' }}
                   required
                 />
               </div>

@@ -148,7 +148,8 @@ export default function CareHomesClient() {
               placeholder="Name des Pflegeheims *"
               value={newCareHome.name}
               onChange={(e) => setNewCareHome({...newCareHome, name: e.target.value})}
-              className="border rounded-lg px-4 py-2"
+              className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+              style={{ color: '#111827' }}
               required
             />
             <input
@@ -156,7 +157,8 @@ export default function CareHomesClient() {
               placeholder="E-Mail Adresse *"
               value={newCareHome.email}
               onChange={(e) => setNewCareHome({...newCareHome, email: e.target.value})}
-              className="border rounded-lg px-4 py-2"
+              className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+              style={{ color: '#111827' }}
               required
             />
             <input
@@ -164,7 +166,8 @@ export default function CareHomesClient() {
               placeholder="Ansprechpartner *"
               value={newCareHome.contactPerson}
               onChange={(e) => setNewCareHome({...newCareHome, contactPerson: e.target.value})}
-              className="border rounded-lg px-4 py-2"
+              className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+              style={{ color: '#111827' }}
               required
             />
             <input
@@ -172,14 +175,16 @@ export default function CareHomesClient() {
               placeholder="Telefon"
               value={newCareHome.phone}
               onChange={(e) => setNewCareHome({...newCareHome, phone: e.target.value})}
-              className="border rounded-lg px-4 py-2"
+              className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+              style={{ color: '#111827' }}
             />
             <input
               type="text"
               placeholder="Adresse"
               value={newCareHome.address}
               onChange={(e) => setNewCareHome({...newCareHome, address: e.target.value})}
-              className="border rounded-lg px-4 py-2 md:col-span-2"
+              className="border rounded-lg px-4 py-2 text-gray-900 bg-white md:col-span-2"
+              style={{ color: '#111827' }}
             />
             <div className="md:col-span-2">
               <button

@@ -32,38 +32,38 @@ export default async function AdminPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Bestellungen verwalten */}
-          <Link href="/admin/orders" className="block">
-            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+          <Link href="/admin/orders" className="block h-full">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">📦</div>
               <h2 className="text-lg font-semibold mb-2">Bestellungen</h2>
-              <p className="text-gray-600">Eingehende Bestellungen verwalten</p>
+              <p className="text-gray-600 flex-grow">Eingehende Bestellungen verwalten</p>
             </div>
           </Link>
 
           {/* Sortiment */}
-          <Link href="/admin/products" className="block">
-            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+          <Link href="/admin/products" className="block h-full">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">🏷️</div>
               <h2 className="text-lg font-semibold mb-2">Sortiment</h2>
-              <p className="text-gray-600">Produkte und Kategorien pflegen</p>
+              <p className="text-gray-600 flex-grow">Produkte und Kategorien pflegen</p>
             </div>
           </Link>
 
           {/* Preisliste */}
-          <Link href="/admin/prices" className="block">
-            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+          <Link href="/admin/prices" className="block h-full">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">💰</div>
               <h2 className="text-lg font-semibold mb-2">Preisliste</h2>
-              <p className="text-gray-600">PZNs, Anbieter & Preise verwalten</p>
+              <p className="text-gray-600 flex-grow">PZNs, Anbieter & Preise verwalten</p>
             </div>
           </Link>
 
           {/* Pflegeheime */}
-          <Link href="/admin/carehomes" className="block">
-            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+          <Link href="/admin/carehomes" className="block h-full">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">🏥</div>
               <h2 className="text-lg font-semibold mb-2">Pflegeheime</h2>
-              <p className="text-gray-600">Zugänge verwalten</p>
+              <p className="text-gray-600 flex-grow">Zugänge verwalten</p>
             </div>
           </Link>
         </div>

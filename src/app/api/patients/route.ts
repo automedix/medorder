@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
+import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession()
+  const session = await getSession()
   
-  if (!session || (session.user as any).role !== 'careHome') {
+  if (!session || session.role !== 'careHome') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const careHomeId = (session.user as any).id
+  const careHomeId = session.id
 
   try {
     const patients = await prisma.patient.findMany({
@@ -22,23 +22,28 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(patients)
   } catch (error) {
+    console.error('Error fetching patients:', error)
     return NextResponse.json({ error: 'Failed to fetch patients' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession()
+  const session = await getSession()
   
-  if (!session || (session.user as any).role !== 'careHome') {
+  if (!session || session.role !== 'careHome') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const careHomeId = (session.user as any).id
-  const body = await request.json()
+  const careHomeId = session.id
   
-  const { firstName, lastName, dateOfBirth } = body
-
   try {
+    const body = await request.json()
+    const { firstName, lastName, dateOfBirth } = body
+    
+    if (!firstName || !lastName || !dateOfBirth) {
+      return NextResponse.json({ error: 'Alle Felder sind erforderlich' }, { status: 400 })
+    }
+
     const patient = await prisma.patient.create({
       data: {
         careHomeId,
@@ -48,8 +53,9 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    return NextResponse.json(patient)
+    return NextResponse.json(patient, { status: 201 })
   } catch (error) {
+    console.error('Error creating patient:', error)
     return NextResponse.json({ error: 'Failed to create patient' }, { status: 500 })
   }
 }

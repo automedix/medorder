@@ -1,12 +1,11 @@
-import { getServerSession } from 'next-auth/next'
+import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions as any)
+  const session = await getSession()
   
-  if (!session || (session.user as any).role !== 'careHome') {
+  if (!session || session.role !== 'careHome') {
     redirect('/login')
   }
 
@@ -17,8 +16,15 @@ export default async function DashboardPage() {
           <h1 className="text-xl font-bold text-gray-800">
             MedOrder - Pflegeheim Dashboard
           </h1>
-          <div className="text-sm text-gray-600">
-            {(session.user as any).name}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600">
+              {session.name}
+            </div>
+            <form action="/api/logout" method="POST">
+              <button type="submit" className="text-sm text-red-600 hover:text-red-800">
+                Abmelden
+              </button>
+            </form>
           </div>
         </div>
       </header>
@@ -26,29 +32,29 @@ export default async function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Neue Bestellung */}
-          <Link href="/order/new" className="block">
-            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+          <Link href="/order/new" className="block h-full">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">🛒</div>
               <h2 className="text-lg font-semibold mb-2">Neue Bestellung</h2>
-              <p className="text-gray-600">Verbandmaterial für Patienten bestellen</p>
+              <p className="text-gray-600 flex-grow">Verbandmaterial für Patienten bestellen</p>
             </div>
           </Link>
 
           {/* Meine Bestellungen */}
-          <Link href="/orders" className="block">
-            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+          <Link href="/orders" className="block h-full">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">📋</div>
               <h2 className="text-lg font-semibold mb-2">Meine Bestellungen</h2>
-              <p className="text-gray-600">Bestellhistorie und Status einsehen</p>
+              <p className="text-gray-600 flex-grow">Bestellhistorie und Status einsehen</p>
             </div>
           </Link>
 
           {/* Patienten */}
-          <Link href="/patients" className="block">
-            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+          <Link href="/patients" className="block h-full">
+            <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition h-full flex flex-col">
               <div className="text-4xl mb-4">👥</div>
               <h2 className="text-lg font-semibold mb-2">Patienten</h2>
-              <p className="text-gray-600">Patienten verwalten und anlegen</p>
+              <p className="text-gray-600 flex-grow">Patienten verwalten und anlegen</p>
             </div>
           </Link>
         </div>
