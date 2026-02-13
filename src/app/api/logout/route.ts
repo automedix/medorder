@@ -6,7 +6,8 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies()
     cookieStore.delete('session')
     
-    return NextResponse.json({ success: true })
+    // Redirect to login page after logout
+    return NextResponse.redirect(new URL('/login', request.url))
   } catch (error) {
     console.error('Logout error:', error)
     return NextResponse.json(
