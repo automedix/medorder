@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   const session = await getSession()
   
@@ -12,7 +12,13 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { id } = params
+  // Handle both sync and async params (Next.js 15 compatibility)
+  const resolvedParams = await Promise.resolve(params)
+  const { id } = resolvedParams
+
+  if (!id) {
+    return NextResponse.json({ error: 'Produkt-ID erforderlich' }, { status: 400 })
+  }
 
   try {
     // Soft delete - set isActive to false

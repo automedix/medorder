@@ -6,12 +6,8 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies()
     cookieStore.delete('session')
     
-    // Use NEXTAUTH_URL env var or fallback to request URL
-    const baseUrl = process.env.NEXTAUTH_URL || request.headers.get('host') || 'localhost:3000'
-    const protocol = baseUrl.includes('localhost') ? 'http' : 'https'
-    
-    // Redirect to login page after logout
-    return NextResponse.redirect(new URL(`${protocol}://${baseUrl}/login`))
+    // Einfacher Redirect - Next.js macht aus /login automatisch die volle URL
+    return NextResponse.redirect(new URL('/login', request.url))
   } catch (error) {
     console.error('Logout error:', error)
     return NextResponse.json(
