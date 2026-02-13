@@ -49,7 +49,11 @@ export default function ProductsClient() {
         fetch('/api/products')
       ])
       if (catRes.ok) setCategories(await catRes.json())
-      if (prodRes.ok) setProducts(await prodRes.json())
+      if (prodRes.ok) {
+        const allProducts = await prodRes.json()
+        // Filter nur aktive Produkte anzeigen
+        setProducts(allProducts.filter((p: Product) => p.isActive))
+      }
     } catch (err) {
       setError('Fehler beim Laden der Daten')
     } finally {
@@ -109,6 +113,31 @@ export default function ProductsClient() {
     }
   }
 
+  const handleDeleteProduct = async (productId: string, productName: string) => {
+    if (!confirm(`Sind Sie sicher, dass Sie "${productName}" löschen möchten?`)) {
+      return
+    }
+    
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE'
+      })
+      
+      if (res.ok) {
+        fetchData()
+        alert('Produkt erfolgreich gelöscht!')
+      } else if (res.status === 401) {
+        setError('Nicht autorisiert. Bitte erneut anmelden.')
+        setTimeout(() => router.push('/login'), 2000)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Fehler beim Löschen')
+      }
+    } catch (err) {
+      setError('Verbindungsfehler')
+    }
+  }
+
   if (loading) return <div className="p-8">Laden...</div>
 
   return (
@@ -132,7 +161,6 @@ export default function ProductsClient() {
           </div>
         )}
 
-        {/* Tabs */}
         <div className="flex space-x-4 mb-6">
           <button
             onClick={() => setActiveTab('products')}
@@ -158,7 +186,6 @@ export default function ProductsClient() {
 
         {activeTab === 'categories' ? (
           <div className="space-y-6">
-            {/* Neue Kategorie Formular */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-4">Neue Kategorie</h2>
               <form onSubmit={handleCreateCategory} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -168,7 +195,6 @@ export default function ProductsClient() {
                   value={newCategory.name}
                   onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
                   className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
-                  style={{ color: '#000000' }}
                   required
                 />
                 <input
@@ -177,7 +203,6 @@ export default function ProductsClient() {
                   value={newCategory.description}
                   onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
                   className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
-                  style={{ color: '#000000' }}
                 />
                 <button
                   type="submit"
@@ -188,7 +213,6 @@ export default function ProductsClient() {
               </form>
             </div>
 
-            {/* Kategorien Liste */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <table className="min-w-full">
                 <thead className="bg-gray-50">
@@ -223,7 +247,6 @@ export default function ProductsClient() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Neues Produkt Formular */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-4">Neues Produkt</h2>
               <form onSubmit={handleCreateProduct} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -233,7 +256,6 @@ export default function ProductsClient() {
                   value={newProduct.name}
                   onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
                   className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
-                  style={{ color: '#000000' }}
                   required
                 />
                 <input
@@ -242,18 +264,16 @@ export default function ProductsClient() {
                   value={newProduct.articleNumber}
                   onChange={(e) => setNewProduct({...newProduct, articleNumber: e.target.value})}
                   className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
-                  style={{ color: '#000000' }}
                 />
                 <select
                   value={newProduct.categoryId}
                   onChange={(e) => setNewProduct({...newProduct, categoryId: e.target.value})}
                   className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
-                  style={{ color: '#000000' }}
                   required
                 >
-                  <option value="" style={{ color: '#000000' }}>Kategorie wählen</option>
+                  <option value="">Kategorie wählen</option>
                   {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id} style={{ color: '#000000' }}>{cat.name}</option>
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>
                 <input
@@ -262,7 +282,6 @@ export default function ProductsClient() {
                   value={newProduct.unit}
                   onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})}
                   className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
-                  style={{ color: '#000000' }}
                 />
                 <input
                   type="text"
@@ -270,7 +289,6 @@ export default function ProductsClient() {
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                   className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
-                  style={{ color: '#000000' }}
                 />
                 <button
                   type="submit"
@@ -281,7 +299,6 @@ export default function ProductsClient() {
               </form>
             </div>
 
-            {/* Produkte Liste */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <table className="min-w-full">
                 <thead className="bg-gray-50">
@@ -290,6 +307,7 @@ export default function ProductsClient() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Artikelnr.</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategorie</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Einheit</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktion</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -299,6 +317,14 @@ export default function ProductsClient() {
                       <td className="px-6 py-4 text-gray-600">{product.articleNumber || '-'}</td>
                       <td className="px-6 py-4 text-gray-900">{product.category?.name || '-'}</td>
                       <td className="px-6 py-4 text-gray-900">{product.unit}</td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleDeleteProduct(product.id, product.name)}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Löschen
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
