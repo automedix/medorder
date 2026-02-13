@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies()
     cookieStore.delete('session')
     
-    // Einfacher Redirect - Next.js macht aus /login automatisch die volle URL
+    // Relative Weiterleitung - Next.js löst automatisch auf
     return NextResponse.redirect(new URL('/login', request.url))
   } catch (error) {
     console.error('Logout error:', error)

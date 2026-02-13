@@ -121,7 +121,7 @@ export default function CareHomesClient() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Zugänge verwalten (Pflegeheime)</h1>
+          <h1 className="text-2xl font-bold text-black">Zugänge verwalten (Pflegeheime)</h1>
           <button
             onClick={() => router.push('/admin')}
             className="text-blue-600 hover:text-blue-800"
@@ -148,7 +148,7 @@ export default function CareHomesClient() {
               placeholder="Name des Pflegeheims *"
               value={newCareHome.name}
               onChange={(e) => setNewCareHome({...newCareHome, name: e.target.value})}
-              className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+              className="border rounded-lg px-4 py-2 text-black bg-white"
               style={{ color: '#111827' }}
               required
             />
@@ -157,7 +157,7 @@ export default function CareHomesClient() {
               placeholder="E-Mail Adresse *"
               value={newCareHome.email}
               onChange={(e) => setNewCareHome({...newCareHome, email: e.target.value})}
-              className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+              className="border rounded-lg px-4 py-2 text-black bg-white"
               style={{ color: '#111827' }}
               required
             />
@@ -166,7 +166,7 @@ export default function CareHomesClient() {
               placeholder="Ansprechpartner *"
               value={newCareHome.contactPerson}
               onChange={(e) => setNewCareHome({...newCareHome, contactPerson: e.target.value})}
-              className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+              className="border rounded-lg px-4 py-2 text-black bg-white"
               style={{ color: '#111827' }}
               required
             />
@@ -175,7 +175,7 @@ export default function CareHomesClient() {
               placeholder="Telefon"
               value={newCareHome.phone}
               onChange={(e) => setNewCareHome({...newCareHome, phone: e.target.value})}
-              className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+              className="border rounded-lg px-4 py-2 text-black bg-white"
               style={{ color: '#111827' }}
             />
             <input
@@ -183,7 +183,7 @@ export default function CareHomesClient() {
               placeholder="Adresse"
               value={newCareHome.address}
               onChange={(e) => setNewCareHome({...newCareHome, address: e.target.value})}
-              className="border rounded-lg px-4 py-2 text-gray-900 bg-white md:col-span-2"
+              className="border rounded-lg px-4 py-2 text-black bg-white md:col-span-2"
               style={{ color: '#111827' }}
             />
             <div className="md:col-span-2">
