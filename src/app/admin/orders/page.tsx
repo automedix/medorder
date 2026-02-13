@@ -154,7 +154,7 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen style={{backgroundColor: '#4477BB'}}">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-black">Bestellungen verwalten</h1>
@@ -204,7 +204,7 @@ export default function AdminOrdersPage() {
             >
               {/* Header - Always visible */}
               <div 
-                className="p-6 cursor-pointer hover:bg-gray-50 transition"
+                className="p-6 cursor-pointer hover:style={{backgroundColor: '#4477BB'}} transition"
                 onClick={() => toggleExpand(order.id)}
               >
                 <div className="flex justify-between items-start">
@@ -239,7 +239,7 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-4 p-3 bg-gray-50 rounded">
+                <div className="grid grid-cols-2 gap-4 mt-4 p-3 style={{backgroundColor: '#4477BB'}} rounded">
                   <div>
                     <div className="text-sm text-black/60">Patient</div>
                     <div className="font-medium">{order.patient.lastName}, {order.patient.firstName}</div>
@@ -257,7 +257,7 @@ export default function AdminOrdersPage() {
 
               {/* Expanded Details */}
               {order.expanded && (
-                <div className="border-t border-gray-200 p-6 bg-gray-50">
+                <div className="border-t border-gray-200 p-6 style={{backgroundColor: '#4477BB'}}">
                   <div className="mb-2">
                     <div className="text-sm text-black/60 mb-3 font-semibold">Bestellte Artikel mit Preisvorschlägen:</div>
                     <div className="space-y-4">

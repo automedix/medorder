@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -31,7 +32,6 @@ export default function LoginPage() {
         return
       }
 
-      // Weiterleitung basierend auf Rolle
       if (role === 'admin') {
         router.push('/admin')
       } else {
@@ -44,10 +44,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex flex-col items-center justify-center" style={{backgroundColor: '#4477BB'}}>
+      {/* Logo */}
+      <div className="mb-8">
+        <Image 
+          src="/logo.png" 
+          alt="MedOrder Logo" 
+          width={200} 
+          height={80}
+          onError={(e) => {
+            // Fallback wenn Logo nicht gefunden
+            e.currentTarget.style.display = 'none'
+          }}
+        />
+        {/* Fallback Text wenn kein Logo */}
+        <div className="text-white text-3xl font-bold text-center">
+          MedOrder
+        </div>
+      </div>
+
       <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          MedOrder - Verbandmaterial-Bestellung
+        <h1 className="text-2xl font-bold text-center mb-6" style={{color: '#111827'}}>
+          Verbandmaterial-Bestellung
         </h1>
         
         {error && (
@@ -58,14 +76,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-1">
+            <label className="block text-sm font-bold mb-1" style={{color: '#111827'}}>
               Anmelden als
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 bg-white"
-              style={{ color: '#000000', fontSize: '16px' }}
+              style={{ color: '#111827', fontSize: '16px' }}
             >
               <option value="careHome">Pflegeheim</option>
               <option value="admin">Praxis-Admin</option>
@@ -73,31 +91,31 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-1">
+            <label className="block text-sm font-bold mb-1" style={{color: '#111827'}}>
               E-Mail
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
               placeholder="email@beispiel.de"
-              style={{ color: '#000000', fontSize: '16px' }}
+              style={{ color: '#111827', fontSize: '16px' }}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-1">
+            <label className="block text-sm font-bold mb-1" style={{color: '#111827'}}>
               Passwort
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+              className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
               placeholder="Ihr Passwort"
-              style={{ color: '#000000', fontSize: '16px' }}
+              style={{ color: '#111827', fontSize: '16px' }}
               required
             />
           </div>
@@ -111,6 +129,7 @@ export default function LoginPage() {
           </button>
         </form>
       </div>
+
     </div>
   )
 }

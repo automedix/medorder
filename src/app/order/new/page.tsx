@@ -130,7 +130,7 @@ export default function NewOrderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen style={{backgroundColor: '#4477BB'}}">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold" style={{color: '#111827'}}>Neue Bestellung</h1>
@@ -238,7 +238,7 @@ export default function NewOrderPage() {
                 <>
                   <div className="space-y-2 mb-4">
                     {cart.map(item => (
-                      <div key={item.productId} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <div key={item.productId} className="flex justify-between items-center p-2 style={{backgroundColor: '#4477BB'}} rounded">
                         <div>
                           <div className="font-medium" style={{color: '#111827'}}>{item.name}</div>
                           <div className="text-sm" style={{color: '#6b7280'}}>{item.quantity} {item.unit}</div>
@@ -269,7 +269,7 @@ export default function NewOrderPage() {
           <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
             <h2 className="text-lg font-semibold mb-4" style={{color: '#111827'}}>Bestellung überprüfen</h2>
             
-            <div className="mb-4 p-3 bg-gray-50 rounded">
+            <div className="mb-4 p-3 style={{backgroundColor: '#4477BB'}} rounded">
               <div className="font-medium" style={{color: '#111827'}}>Patient:</div>
               <div style={{color: '#374151'}}>{selectedPatient.lastName}, {selectedPatient.firstName}</div>
             </div>
@@ -301,7 +301,7 @@ export default function NewOrderPage() {
             <div className="flex space-x-4">
               <button
                 onClick={() => setStep(2)}
-                className="px-4 py-2 border rounded hover:bg-gray-50"
+                className="px-4 py-2 border rounded hover:style={{backgroundColor: '#4477BB'}}"
                 style={{color: '#374151'}}
               >
                 ← Zurück
@@ -338,7 +338,7 @@ export default function NewOrderPage() {
                   setNotes('')
                   setSelectedPatient(null)
                 }}
-                className="px-4 py-2 border rounded hover:bg-gray-50"
+                className="px-4 py-2 border rounded hover:style={{backgroundColor: '#4477BB'}}"
                 style={{color: '#374151'}}
               >
                 Neue Bestellung

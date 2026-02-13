@@ -80,7 +80,7 @@ export default function PatientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen style={{backgroundColor: '#4477BB'}}">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold" style={{color: '#111827'}}>Patienten</h1>

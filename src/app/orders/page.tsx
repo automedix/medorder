@@ -67,7 +67,7 @@ export default function MyOrdersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen style={{backgroundColor: '#4477BB'}}">
         <header className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <h1 className="text-xl font-bold" style={{color: '#111827'}}>Meine Bestellungen</h1>
@@ -81,7 +81,7 @@ export default function MyOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen style={{backgroundColor: '#4477BB'}}">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold" style={{color: '#111827'}}>Meine Bestellungen</h1>
@@ -148,7 +148,7 @@ export default function MyOrdersPage() {
               >
                 {/* Header */}
                 <div 
-                  className="p-6 cursor-pointer hover:bg-gray-50 transition"
+                  className="p-6 cursor-pointer hover:style={{backgroundColor: '#4477BB'}} transition"
                   onClick={() => toggleExpand(order.id)}
                 >
                   <div className="flex justify-between items-start">
@@ -175,7 +175,7 @@ export default function MyOrdersPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div className="p-3 bg-gray-50 rounded">
+                    <div className="p-3 style={{backgroundColor: '#4477BB'}} rounded">
                       <div className="text-sm" style={{color: '#6b7280'}}>Patient</div>
                       <div className="font-medium" style={{color: '#111827'}}>
                         {order.patient.lastName}, {order.patient.firstName}
@@ -184,7 +184,7 @@ export default function MyOrdersPage() {
                         {new Date(order.patient.dateOfBirth).toLocaleDateString('de-DE')}
                       </div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded">
+                    <div className="p-3 style={{backgroundColor: '#4477BB'}} rounded">
                       <div className="text-sm" style={{color: '#6b7280'}}>Artikel</div>
                       <div className="font-medium" style={{color: '#111827'}}>{order.totalItems} Positionen</div>
                     </div>
@@ -193,7 +193,7 @@ export default function MyOrdersPage() {
 
                 {/* Expanded Details */}
                 {expandedOrder === order.id && (
-                  <div className="border-t border-gray-200 p-6 bg-gray-50">
+                  <div className="border-t border-gray-200 p-6 style={{backgroundColor: '#4477BB'}}">
                     <h3 className="font-semibold mb-3" style={{color: '#111827'}}>Bestellte Artikel:</h3>
                     <div className="space-y-2">
                       {order.items.map((item, idx) => (
