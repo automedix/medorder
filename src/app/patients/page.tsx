@@ -124,7 +124,7 @@ export default function PatientsPage() {
                     type="text"
                     value={newPatient.firstName}
                     onChange={(e) => setNewPatient({...newPatient, firstName: e.target.value})}
-                    className="w-full p-2 border rounded text-gray-900 bg-white"
+                    className="w-full p-2 border rounded bg-white" style={{color: "#111827"}}
                     style={{ color: '#111827' }}
                     required
                   />
@@ -137,7 +137,7 @@ export default function PatientsPage() {
                     type="text"
                     value={newPatient.lastName}
                     onChange={(e) => setNewPatient({...newPatient, lastName: e.target.value})}
-                    className="w-full p-2 border rounded text-gray-900 bg-white"
+                    className="w-full p-2 border rounded bg-white" style={{color: "#111827"}}
                     style={{ color: '#111827' }}
                     required
                   />
@@ -151,7 +151,7 @@ export default function PatientsPage() {
                   type="date"
                   value={newPatient.dateOfBirth}
                   onChange={(e) => setNewPatient({...newPatient, dateOfBirth: e.target.value})}
-                  className="w-full p-2 border rounded text-gray-900 bg-white"
+                  className="w-full p-2 border rounded bg-white" style={{color: "#111827"}}
                   style={{ color: '#111827' }}
                   required
                 />

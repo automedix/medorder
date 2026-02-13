@@ -210,7 +210,7 @@ export default function PricesPage() {
                     required
                     value={formData.productId}
                     onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                    className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                    className="w-full border rounded px-3 py-2 bg-white" style={{color: "#111827"}}
                   >
                     <option value="">Bitte wählen</option>
                     {products.map((product) => (
@@ -225,7 +225,7 @@ export default function PricesPage() {
                 <input
                   type="text" required value={formData.pzn}
                   onChange={(e) => setFormData({ ...formData, pzn: e.target.value })}
-                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  className="w-full border rounded px-3 py-2 bg-white" style={{color: "#111827"}}
                   placeholder="z.B. 12345678"
                 />
               </div>
@@ -235,7 +235,7 @@ export default function PricesPage() {
                 <input
                   type="text" required value={formData.supplier}
                   onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  className="w-full border rounded px-3 py-2 bg-white" style={{color: "#111827"}}
                   placeholder="z.B. Apotheke Müller"
                 />
               </div>
@@ -245,7 +245,7 @@ export default function PricesPage() {
                 <input
                   type="number" step="0.01" min="0" required value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  className="w-full border rounded px-3 py-2 bg-white" style={{color: "#111827"}}
                   placeholder="0.00"
                 />
               </div>
@@ -255,7 +255,7 @@ export default function PricesPage() {
                 <input
                   type="text" value={formData.packSize}
                   onChange={(e) => setFormData({ ...formData, packSize: e.target.value })}
-                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  className="w-full border rounded px-3 py-2 bg-white" style={{color: "#111827"}}
                   placeholder="z.B. 50 Stück"
                 />
               </div>

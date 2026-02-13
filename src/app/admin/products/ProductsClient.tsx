@@ -194,7 +194,7 @@ export default function ProductsClient() {
                   placeholder="Name"
                   value={newCategory.name}
                   onChange={(e) => setNewCategory({...newCategory, name: e.target.value})}
-                  className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+                  className="border rounded-lg px-4 py-2 bg-white" style={{color: "#111827"}}
                   required
                 />
                 <input
@@ -202,7 +202,7 @@ export default function ProductsClient() {
                   placeholder="Beschreibung"
                   value={newCategory.description}
                   onChange={(e) => setNewCategory({...newCategory, description: e.target.value})}
-                  className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+                  className="border rounded-lg px-4 py-2 bg-white" style={{color: "#111827"}}
                 />
                 <button
                   type="submit"
@@ -225,8 +225,8 @@ export default function ProductsClient() {
                 <tbody className="divide-y divide-gray-200">
                   {categories.map((category) => (
                     <tr key={category.id}>
-                      <td className="px-6 py-4 font-medium text-gray-900">{category.name}</td>
-                      <td className="px-6 py-4 text-gray-600">{category.description || '-'}</td>
+                      <td className="px-6 py-4 font-medium" style={{color: "#111827"}}>{category.name}</td>
+                      <td className="px-6 py-4" style={{color: "#4b5563"}}>{category.description || '-'}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           category.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -255,7 +255,7 @@ export default function ProductsClient() {
                   placeholder="Produktname"
                   value={newProduct.name}
                   onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                  className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+                  className="border rounded-lg px-4 py-2 bg-white" style={{color: "#111827"}}
                   required
                 />
                 <input
@@ -263,12 +263,12 @@ export default function ProductsClient() {
                   placeholder="Artikelnummer"
                   value={newProduct.articleNumber}
                   onChange={(e) => setNewProduct({...newProduct, articleNumber: e.target.value})}
-                  className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+                  className="border rounded-lg px-4 py-2 bg-white" style={{color: "#111827"}}
                 />
                 <select
                   value={newProduct.categoryId}
                   onChange={(e) => setNewProduct({...newProduct, categoryId: e.target.value})}
-                  className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+                  className="border rounded-lg px-4 py-2 bg-white" style={{color: "#111827"}}
                   required
                 >
                   <option value="">Kategorie wählen</option>
@@ -281,14 +281,14 @@ export default function ProductsClient() {
                   placeholder="Einheit (z.B. Stück, Packung)"
                   value={newProduct.unit}
                   onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})}
-                  className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+                  className="border rounded-lg px-4 py-2 bg-white" style={{color: "#111827"}}
                 />
                 <input
                   type="text"
                   placeholder="Beschreibung"
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
-                  className="border rounded-lg px-4 py-2 text-gray-900 bg-white"
+                  className="border rounded-lg px-4 py-2 bg-white" style={{color: "#111827"}}
                 />
                 <button
                   type="submit"
@@ -313,10 +313,10 @@ export default function ProductsClient() {
                 <tbody className="divide-y divide-gray-200">
                   {products.map((product) => (
                     <tr key={product.id}>
-                      <td className="px-6 py-4 font-medium text-gray-900">{product.name}</td>
-                      <td className="px-6 py-4 text-gray-600">{product.articleNumber || '-'}</td>
-                      <td className="px-6 py-4 text-gray-900">{product.category?.name || '-'}</td>
-                      <td className="px-6 py-4 text-gray-900">{product.unit}</td>
+                      <td className="px-6 py-4 font-medium" style={{color: "#111827"}}>{product.name}</td>
+                      <td className="px-6 py-4" style={{color: "#4b5563"}}>{product.articleNumber || '-'}</td>
+                      <td className="px-6 py-4" style={{color: "#111827"}}>{product.category?.name || '-'}</td>
+                      <td className="px-6 py-4" style={{color: "#111827"}}>{product.unit}</td>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => handleDeleteProduct(product.id, product.name)}
