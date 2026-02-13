@@ -9,7 +9,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const careHomeId = session.id
+  // Fix: userId statt id verwenden
+  const careHomeId = session.userId || (session as any).id
 
   try {
     const patients = await prisma.patient.findMany({
@@ -34,7 +35,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const careHomeId = session.id
+  // Fix: userId statt id verwenden
+  const careHomeId = session.userId || (session as any).id
   
   try {
     const body = await request.json()
