@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -42,20 +41,34 @@ interface Order {
 }
 
 export default function AdminOrdersPage() {
-  const { data: session, status } = useSession()
   const router = useRouter()
+  const [session, setSession] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState<Order[]>([])
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all')
   const [loadingPrices, setLoadingPrices] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    checkSession()
+  }, [])
+
+  const checkSession = async () => {
+    try {
+      const res = await fetch('/api/auth/session')
+      const data = await res.json()
+      
+      if (!data.session || data.session.role !== 'admin') {
+        router.push('/login')
+        return
+      }
+      
+      setSession(data.session)
+      fetchOrders()
+      setLoading(false)
+    } catch {
       router.push('/login')
     }
-    if (status === 'authenticated') {
-      fetchOrders()
-    }
-  }, [status])
+  }
 
   const fetchOrders = async () => {
     const res = await fetch('/api/orders')
@@ -99,7 +112,6 @@ export default function AdminOrdersPage() {
     const order = orders.find(o => o.id === orderId)
     if (!order) return
 
-    // If expanding, fetch prices for all items
     if (!order.expanded) {
       order.items.forEach(item => {
         if (!item.cheapestPrices) {
@@ -137,7 +149,7 @@ export default function AdminOrdersPage() {
     }).format(price)
   }
 
-  if (status === 'loading') {
+  if (loading) {
     return <div className="p-8">Laden...</div>
   }
 

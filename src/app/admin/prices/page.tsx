@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface Product {
   id: string
@@ -24,7 +24,6 @@ interface ProductPrice {
 }
 
 export default function PricesPage() {
-  const { data: session, status } = useSession()
   const router = useRouter()
   const [prices, setPrices] = useState<ProductPrice[]>([])
   const [products, setProducts] = useState<Product[]>([])
@@ -39,21 +38,32 @@ export default function PricesPage() {
   })
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-      return
-    }
-    
-    if (session && (session.user as any).role !== 'admin') {
-      router.push('/dashboard')
-      return
-    }
+    checkAuth()
+  }, [router])
 
-    if (session) {
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/session')
+      const data = await res.json()
+      
+      if (!data.session) {
+        router.push('/login')
+        return
+      }
+      
+      if (data.session.role !== 'admin') {
+        router.push('/dashboard')
+        return
+      }
+      
       fetchPrices()
       fetchProducts()
+    } catch {
+      router.push('/login')
+    } finally {
+      setLoading(false)
     }
-  }, [session, status, router])
+  }
 
   const fetchPrices = async () => {
     try {
@@ -64,8 +74,6 @@ export default function PricesPage() {
       }
     } catch (error) {
       console.error('Error fetching prices:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -117,7 +125,7 @@ export default function PricesPage() {
     }).format(price)
   }
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return <div className="p-8">Laden...</div>
   }
 
@@ -129,9 +137,9 @@ export default function PricesPage() {
             Preisliste verwalten
           </h1>
           <div className="flex gap-4">
-            <a href="/admin" className="text-blue-600 hover:text-blue-800">
+            <Link href="/admin" className="text-blue-600 hover:text-blue-800">
               ← Zurück zum Admin
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -162,11 +170,12 @@ export default function PricesPage() {
                   required
                   value={formData.productId}
                   onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  style={{ color: '#111827' }}
                 >
                   <option value="">Bitte wählen</option>
                   {products.map((product) => (
-                    <option key={product.id} value={product.id}>
+                    <option key={product.id} value={product.id} style={{ color: '#111827' }}>
                       {product.name} ({product.unit})
                     </option>
                   ))}
@@ -182,7 +191,8 @@ export default function PricesPage() {
                   required
                   value={formData.pzn}
                   onChange={(e) => setFormData({ ...formData, pzn: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  style={{ color: '#111827' }}
                   placeholder="z.B. 12345678"
                 />
               </div>
@@ -196,7 +206,8 @@ export default function PricesPage() {
                   required
                   value={formData.supplier}
                   onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  style={{ color: '#111827' }}
                   placeholder="z.B. Apotheke Müller"
                 />
               </div>
@@ -212,7 +223,8 @@ export default function PricesPage() {
                   required
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  style={{ color: '#111827' }}
                   placeholder="0.00"
                 />
               </div>
@@ -225,7 +237,8 @@ export default function PricesPage() {
                   type="text"
                   value={formData.packSize}
                   onChange={(e) => setFormData({ ...formData, packSize: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border rounded px-3 py-2 text-gray-900 bg-white"
+                  style={{ color: '#111827' }}
                   placeholder="z.B. 50 Stück, 10x2 Stück"
                 />
               </div>

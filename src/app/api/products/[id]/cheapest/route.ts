@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
+import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 // GET: Top 3 günstigste Preise für ein Produkt
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions as any)
+  const session = await getSession()
   
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

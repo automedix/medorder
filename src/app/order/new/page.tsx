@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -32,7 +31,6 @@ interface CartItem {
 }
 
 export default function NewOrderPage() {
-  const { data: session, status } = useSession()
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [patients, setPatients] = useState<Patient[]>([])
@@ -41,16 +39,30 @@ export default function NewOrderPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [notes, setNotes] = useState('')
   const [orderNumber, setOrderNumber] = useState('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
-    if (status === 'authenticated') {
+    checkAuth()
+  }, [router])
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/session')
+      const data = await res.json()
+      
+      if (!data.session || data.session.role !== 'careHome') {
+        router.push('/login')
+        return
+      }
+      
       fetchPatients()
       fetchCategories()
+    } catch {
+      router.push('/login')
+    } finally {
+      setLoading(false)
     }
-  }, [status])
+  }
 
   const fetchPatients = async () => {
     const res = await fetch('/api/patients')
@@ -113,7 +125,7 @@ export default function NewOrderPage() {
     }
   }
 
-  if (status === 'loading') {
+  if (loading) {
     return <div className="p-8">Laden...</div>
   }
 

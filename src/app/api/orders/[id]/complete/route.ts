@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
+import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession()
+  const session = await getSession()
   
-  if (!session || (session.user as any).role !== 'admin') {
+  if (!session || session.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -20,12 +20,13 @@ export async function POST(
       data: {
         status: 'COMPLETED',
         completedAt: new Date(),
-        completedBy: (session.user as any).name || 'Admin'
+        completedBy: session.name || 'Admin'
       }
     })
 
     return NextResponse.json(order)
   } catch (error) {
+    console.error('Error completing order:', error)
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
   }
 }

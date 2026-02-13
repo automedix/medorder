@@ -1,12 +1,11 @@
-import { getServerSession } from 'next-auth/next'
+import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import CareHomesClient from './CareHomesClient'
 
 export default async function CareHomesPage() {
-  const session = await getServerSession(authOptions as any)
+  const session = await getSession()
   
-  if (!session || (session.user as any).role !== 'admin') {
+  if (!session || session.role !== 'admin') {
     redirect('/login')
   }
 

@@ -12,10 +12,9 @@
     "db:generate": "prisma generate"
   },
   "dependencies": {
-    "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^6.19.2",
     "bcryptjs": "^3.0.3",
-    "jose": "^5.2.0",
+    "jose": "^6.0.10",
     "next": "^16.1.6",
     "nodemailer": "^7.0.13",
     "prisma": "^6.19.2",
