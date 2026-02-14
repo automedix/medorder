@@ -124,6 +124,21 @@ export async function GET(request: NextRequest) {
     if (session.role === 'careHome') {
       where.careHomeId = session.userId || (session as any).id
     }
+    
+    // Berechne Datum vor 7 Tagen (für completedFilter)
+    const oneWeekAgo = new Date()
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+    
+    // Entweder PENDING ODER (COMPLETED UND nicht älter als 1 Woche)
+    where.OR = [
+      { status: 'PENDING' },
+      { 
+        AND: [
+          { status: 'COMPLETED' },
+          { completedAt: { gte: oneWeekAgo } }
+        ]
+      }
+    ]
 
     const orders = await prisma.order.findMany({
       where,
@@ -150,7 +165,10 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: [
+        { status: 'asc' },      // PENDING zuerst (alphabetisch vor COMPLETED)
+        { createdAt: 'desc' }   // Neueste zuerst
+      ]
     })
 
     return NextResponse.json(orders)

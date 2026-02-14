@@ -15,6 +15,7 @@ interface Order {
   orderNumber: string
   status: 'PENDING' | 'COMPLETED'
   createdAt: string
+  completedAt: string | null
   totalItems: number
   notes: string | null
   patient: {
@@ -42,7 +43,21 @@ export default function MyOrdersPage() {
       const res = await fetch('/api/orders')
       if (res.ok) {
         const data = await res.json()
-        setOrders(data)
+        // Sortierung: PENDING zuerst (neueste oben), dann COMPLETED (neueste oben)
+        const sorted = data.sort((a: Order, b: Order) => {
+          // PENDING immer vor COMPLETED
+          if (a.status === 'PENDING' && b.status === 'COMPLETED') return -1
+          if (a.status === 'COMPLETED' && b.status === 'PENDING') return 1
+          // Bei gleichem Status: neueste zuerst
+          if (a.status === 'PENDING' && b.status === 'PENDING') {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          }
+          // COMPLETED nach completedAt sortieren, fallback auf createdAt
+          const aDate = a.completedAt || a.createdAt
+          const bDate = b.completedAt || b.createdAt
+          return new Date(bDate).getTime() - new Date(aDate).getTime()
+        })
+        setOrders(sorted)
       } else if (res.status === 401) {
         router.push('/login')
       } else {
@@ -120,13 +135,18 @@ export default function MyOrdersPage() {
           </button>
         </div>
 
+        {/* Info: Erledigte verschwinden nach 1 Woche */}
+        <div className="mb-6 bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
+          <p>ℹ️ Erledigte Bestellungen verschwinden nach 7 Tagen automatisch aus der Liste, bleiben aber in der Datenbank gespeichert.</p>
+        </div>
+
         {/* Bestellungen Liste */}
         {filteredOrders.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <div className="text-5xl mb-4">📋</div>
-            <h2 className="text-lg font-semibold mb-2" style={{color: '#111827'}}>Noch keine Bestellungen</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{color: '#111827'}}>Keine Bestellungen</h2>
             <p className="mb-4" style={{color: '#374151'}}>
-              Sie haben noch keine Bestellungen aufgegeben.
+              Aktuell gibt es keine Bestellungen in dieser Ansicht.
             </p>
             <Link 
               href="/order/new" 
@@ -166,7 +186,12 @@ export default function MyOrdersPage() {
                         )}
                       </div>
                       <div className="text-sm mt-1" style={{color: '#6b7280'}}>
-                        {new Date(order.createdAt).toLocaleString('de-DE')}
+                        Erstellt: {new Date(order.createdAt).toLocaleString('de-DE')}
+                        {order.completedAt && (
+                          <span className="ml-2 text-green-600">
+                            • Erledigt: {new Date(order.completedAt).toLocaleString('de-DE')}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <span style={{color: '#9ca3af'}}>
