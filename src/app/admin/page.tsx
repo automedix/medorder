@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Package, Tag, DollarSign, Building2, LogOut, Stethoscope, TrendingUp, Archive } from 'lucide-react'
+import { Package, Tag, DollarSign, Building2, LogOut, Stethoscope, TrendingUp, Archive, Key } from 'lucide-react'
 
 export default async function AdminPage() {
   const session = await getSession()
@@ -51,6 +51,14 @@ export default async function AdminPage() {
       description: 'Archivierte Patienten und deren Bestellhistorie',
       color: 'bg-gray-600',
       hoverColor: 'hover:bg-gray-700'
+    },
+    {
+      href: '/admin/passwords',
+      icon: Key,
+      title: 'Passwörter',
+      description: 'Passwörter für Pflegeheime und Admin zurücksetzen',
+      color: 'bg-red-500',
+      hoverColor: 'hover:bg-red-600'
     }
   ]
 
