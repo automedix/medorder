@@ -141,7 +141,7 @@ export default function ProductsClient() {
   if (loading) return <div className="p-8">Laden...</div>
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{backgroundColor: '#4477BB'}}>
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Produkte & Kategorien</h1>
@@ -248,7 +248,7 @@ export default function ProductsClient() {
         ) : (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold mb-4">Neues Produkt</h2>
+              <h2 className="text-lg font-semibold mb-4 text-gray-900">Neues Produkt</h2>
               <form onSubmit={handleCreateProduct} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <input
                   type="text"

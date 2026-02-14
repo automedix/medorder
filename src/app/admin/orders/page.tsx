@@ -169,19 +169,19 @@ export default function AdminOrdersPage() {
         <div className="mb-6 flex space-x-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded ${filter === 'all' ? 'bg-blue-600 text-white' : 'bg-white'}`}
+            className={`px-4 py-2 rounded ${filter === 'all' ? 'bg-blue-800 text-white' : 'bg-white text-gray-800'}`}
           >
             Alle ({orders.length})
           </button>
           <button
             onClick={() => setFilter('pending')}
-            className={`px-4 py-2 rounded ${filter === 'pending' ? 'bg-orange-600 text-white' : 'bg-white'}`}
+            className={`px-4 py-2 rounded ${filter === 'pending' ? 'bg-orange-600 text-white' : 'bg-white text-gray-800'}`}
           >
             Offen ({orders.filter(o => o.status === 'PENDING').length})
           </button>
           <button
             onClick={() => setFilter('completed')}
-            className={`px-4 py-2 rounded ${filter === 'completed' ? 'bg-green-600 text-white' : 'bg-white'}`}
+            className={`px-4 py-2 rounded ${filter === 'completed' ? 'bg-green-600 text-white' : 'bg-white text-gray-800'}`}
           >
             Erledigt ({orders.filter(o => o.status === 'COMPLETED').length})
           </button>
@@ -210,14 +210,14 @@ export default function AdminOrdersPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-lg font-mono font-bold">{order.orderNumber}</span>
+                      <span className="text-lg font-mono font-bold text-gray-900">{order.orderNumber}</span>
                       {order.status === 'PENDING' ? (
                         <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">Offen</span>
                       ) : (
                         <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Erledigt</span>
                       )}
                     </div>
-                    <div className="text-sm text-black/60 mt-1">
+                    <div className="text-sm text-gray-600 mt-1">
                       {new Date(order.createdAt).toLocaleString('de-DE')} • {order.careHome.name}
                     </div>
                   </div>
@@ -239,18 +239,18 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-4 p-3 bg-blue-100 rounded">
+                <div className="grid grid-cols-2 gap-4 mt-4 p-3 bg-blue-50 rounded">
                   <div>
-                    <div className="text-sm text-black/60">Patient</div>
-                    <div className="font-medium">{order.patient.lastName}, {order.patient.firstName}</div>
-                    <div className="text-sm text-black/60">
+                    <div className="text-sm text-gray-600 font-medium">Patient</div>
+                    <div className="font-medium text-gray-900">{order.patient.lastName}, {order.patient.firstName}</div>
+                    <div className="text-sm text-gray-600">
                       {new Date(order.patient.dateOfBirth).toLocaleDateString('de-DE')}
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-black/60">Pflegeheim</div>
-                    <div className="font-medium">{order.careHome.name}</div>
-                    <div className="text-sm text-black/60">{order.careHome.email}</div>
+                    <div className="text-sm text-gray-600 font-medium">Pflegeheim</div>
+                    <div className="font-medium text-gray-900">{order.careHome.name}</div>
+                    <div className="text-sm text-gray-600">{order.careHome.email}</div>
                   </div>
                 </div>
               </div>
@@ -259,7 +259,7 @@ export default function AdminOrdersPage() {
               {order.expanded && (
                 <div className="border-t border-gray-200 p-6" style={{backgroundColor: '#4477BB'}}>
                   <div className="mb-2">
-                    <div className="text-sm text-black/60 mb-3 font-semibold">Bestellte Artikel mit Preisvorschlägen:</div>
+                    <div className="text-base text-white mb-3 font-semibold">Bestellte Artikel mit Preisvorschlägen:</div>
                     <div className="space-y-4">
                       {order.items.map((item, idx) => (
                         <div key={idx} className="bg-white rounded-lg shadow-sm overflow-hidden">
