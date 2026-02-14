@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Building2, Stethoscope, Mail, Lock } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -48,11 +49,15 @@ export default function LoginPage() {
       {/* Linke Seite - Branding */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 text-white" style={{backgroundColor: '#4477BB'}}>
         <div>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <Stethoscope className="w-6 h-6" />
-            </div>
-            <span className="text-2xl font-bold">MedOrder</span>
+          <div className="mb-8">
+            <Image
+              src="/logo.png"
+              alt="Hausärzte im Grillepark"
+              width={300}
+              height={100}
+              className="max-w-[280px] h-auto"
+              priority
+            />
           </div>
           <h1 className="text-4xl font-bold mb-4 leading-tight">
             Digitale Bestellung von<br />
@@ -87,11 +92,15 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-gray-50">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Stethoscope className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">MedOrder</span>
+          <div className="lg:hidden flex items-center justify-center mb-8">
+            <Image
+              src="/logo.png"
+              alt="Hausärzte im Grillepark"
+              width={250}
+              height={80}
+              className="max-w-[220px] h-auto"
+              priority
+            />
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl p-8">
