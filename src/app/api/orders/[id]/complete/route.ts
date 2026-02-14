@@ -4,17 +4,21 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getSession()
-  
-  if (!session || session.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { id } = params
-
   try {
+    const session = await getSession()
+    
+    if (!session || session.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await params
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Order ID fehlt' }, { status: 400 })
+    }
+
     const order = await prisma.order.update({
       where: { id },
       data: {
