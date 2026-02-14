@@ -199,15 +199,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-500 text-center">
-                Test-Zugangsdaten:
-              </p>
-              <div className="mt-2 text-xs text-gray-400 text-center space-y-1">
-                <p>Pflegeheim: <span className="font-mono">demo@pflegeheim.de</span> / <span className="font-mono">demo123</span></p>
-                <p>Admin: <span className="font-mono">admin@praxis.de</span> / <span className="font-mono">admin123</span></p>
-              </div>
-            </div>
+            {/* Keine Demo-Zugangsdaten im Live-Betrieb */}
           </div>
         </div>
       </div>
