@@ -32,7 +32,7 @@ export default function RootLayout({
         style={{backgroundColor: '#4477BB', minHeight: '100vh'}}
       >
         <Providers>{children}</Providers>
-        <Footer />
+        <FooterWrapper />
       </body>
     </html>
   );
