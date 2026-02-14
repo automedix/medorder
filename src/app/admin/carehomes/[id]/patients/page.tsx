@@ -82,6 +82,8 @@ export default function CareHomePatientsPage() {
         setArchiveNote('')
         fetchData()
       } else {
+        const errorData = await res.json().catch(() => ({ error: "Unbekannter Fehler" }))
+        console.error("Archivieren fehlgeschlagen:", errorData)
         alert('Fehler beim Archivieren')
       }
     } catch (err) {
