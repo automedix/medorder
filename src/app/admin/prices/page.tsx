@@ -178,17 +178,17 @@ export default function PricesPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#4477BB'}}>
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-800">Preisliste verwalten</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-gray-900">Preisliste verwalten</h1>
           <Link href="/admin" className="text-blue-600 hover:text-blue-800">← Zurück zum Admin</Link>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex justify-between items-center">
-          <p className="text-gray-600">PZNs, Anbieter und Preise für Produkte verwalten.</p>
+          <p className="text-gray-700">PZNs, Anbieter und Preise für Produkte verwalten.</p>
           <button
             onClick={() => { editingPrice ? resetForm() : setShowForm(!showForm) }}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
