@@ -157,28 +157,6 @@ export default function AdminOrdersPage() {
     }
   }
 
-  const [archivingPatient, setArchivingPatient] = useState<string | null>(null)
-  const [archiveNote, setArchiveNote] = useState('')
-
-  const archivePatient = async (patientId: string) => {
-    if (!archiveNote.trim()) {
-      alert('Bitte geben Sie einen Vermerk ein (z.B. "verstorben", "umgezogen")')
-      return
-    }
-
-    const res = await fetch(`/api/admin/patients/${patientId}/archive`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isArchived: true, archiveNote })
-    })
-
-    if (res.ok) {
-      setArchivingPatient(null)
-      setArchiveNote('')
-      fetchOrders()
-    }
-  }
-
   const filteredOrders = orders.filter(order => {
     if (filter === 'pending') return order.status === 'PENDING'
     if (filter === 'completed') return order.status === 'COMPLETED'
