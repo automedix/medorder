@@ -5,7 +5,7 @@ import { getSession } from '@/lib/auth'
 // GET /api/carehomes/[id] - Pflegeheim abrufen
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession()
@@ -13,7 +13,11 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
+    
+    if (!id) {
+      return NextResponse.json({ error: 'ID fehlt' }, { status: 400 })
+    }
 
     const careHome = await prisma.careHome.findUnique({
       where: { id },
@@ -39,7 +43,7 @@ export async function GET(
 // PATCH /api/carehomes/[id] - Pflegeheim aktualisieren
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession()
@@ -48,7 +52,7 @@ export async function PATCH(
     }
 
     const data = await request.json()
-    const { id } = params
+    const { id } = await params
 
     const careHome = await prisma.careHome.update({
       where: { id },
