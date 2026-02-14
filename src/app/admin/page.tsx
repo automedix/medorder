@@ -1,7 +1,143 @@
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Package, Tag, DollarSign, Building2, LogOut, Stethoscope, TrendingUp, Archive, Key } from 'lucide-react'
+import { Package, Tag, DollarSign, Building2, LogOut, Stethoscope, Clock, Building, Box, Calendar, Archive, Key, Loader2 } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
+import { Suspense } from 'react'
+
+async function AdminStats() {
+  // Start of today for "Bestellungen heute"
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  // Fetch all stats in parallel
+  const [
+    pendingOrdersCount,
+    activeCareHomesCount,
+    activeProductsCount,
+    todayOrdersCount,
+  ] = await Promise.all([
+    prisma.order.count({
+      where: {
+        status: 'PENDING',
+      },
+    }),
+    prisma.careHome.count({
+      where: {
+        isActive: true,
+      },
+    }),
+    prisma.product.count({
+      where: {
+        isActive: true,
+      },
+    }),
+    prisma.order.count({
+      where: {
+        createdAt: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+    }),
+  ])
+
+  // Format numbers with dots (German format: 1.234)
+  const formatNumber = (num: number) => {
+    if (num === 0) return '0'
+    return num.toLocaleString('de-DE')
+  }
+
+  const stats = [
+    {
+      label: 'Offene Bestellungen',
+      value: pendingOrdersCount,
+      icon: Clock,
+      color: 'text-emerald-600',
+      bg: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
+    },
+    {
+      label: 'Aktive Pflegeheime',
+      value: activeCareHomesCount,
+      icon: Building,
+      color: 'text-blue-600',
+      bg: 'bg-gradient-to-br from-blue-400 to-blue-600',
+    },
+    {
+      label: 'Produkte im Sortiment',
+      value: activeProductsCount,
+      icon: Box,
+      color: 'text-violet-600',
+      bg: 'bg-gradient-to-br from-violet-400 to-violet-600',
+    },
+    {
+      label: 'Bestellungen heute',
+      value: todayOrdersCount,
+      icon: Calendar,
+      color: 'text-orange-600',
+      bg: 'bg-gradient-to-br from-orange-400 to-orange-600',
+    },
+  ]
+
+  return (
+    <>
+      {stats.map((stat, idx) => (
+        <div
+          key={idx}
+          className="relative overflow-hidden bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200 p-5"
+        >
+          {/* Gradient bar at top */}
+          <div className={`absolute top-0 left-0 right-0 h-1 ${stat.bg}`} />
+          
+          <div className="flex items-end gap-3">
+            <div className={`${stat.bg} rounded-xl p-2.5`}>
+              <stat.icon className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 text-right">
+              <p className={`text-3xl font-bold ${stat.value === 0 ? 'text-gray-300' : 'text-gray-900'}`}>
+                {formatNumber(stat.value)}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
+
+function StatsSkeleton() {
+  const skeletons = [
+    { bg: 'from-emerald-400 to-emerald-600' },
+    { bg: 'from-blue-400 to-blue-600' },
+    { bg: 'from-violet-400 to-violet-600' },
+    { bg: 'from-orange-400 to-orange-600' },
+  ]
+
+  return (
+    <>
+      {skeletons.map((skeleton, idx) => (
+        <div
+          key={idx}
+          className="relative overflow-hidden bg-white rounded-2xl shadow-sm p-5"
+        >
+          <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-br ${skeleton.bg}`} />
+          <div className="flex items-end gap-3">
+            <div className={`bg-gradient-to-br ${skeleton.bg} rounded-xl p-2.5 opacity-50`}>
+              <Loader2 className="w-5 h-5 text-white animate-spin" />
+            </div>
+            <div className="flex-1 text-right">
+              <p className="text-3xl font-bold text-gray-300">...</p>
+              <p className="text-xs text-gray-400 mt-0.5">Laden...</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
 
 export default async function AdminPage() {
   const session = await getSession()
@@ -111,20 +247,9 @@ export default async function AdminPage() {
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'Offene Bestellungen', value: '—', color: 'text-emerald-600', bg: 'bg-emerald-100' },
-            { label: 'Aktive Pflegeheime', value: '—', color: 'text-blue-600', bg: 'bg-blue-100' },
-            { label: 'Produkte im Sortiment', value: '—', color: 'text-violet-600', bg: 'bg-violet-100' },
-            { label: 'Bestellungen heute', value: '—', color: 'text-orange-600', bg: 'bg-orange-100' }
-          ].map((stat, idx) => (
-            <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-              <div className={`w-10 h-10 ${stat.bg} rounded-lg flex items-center justify-center mb-3`}>
-                <TrendingUp className={`w-5 h-5 ${stat.color}`} />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              <p className="text-xs text-gray-500">{stat.label}</p>
-            </div>
-          ))}
+          <Suspense fallback={<StatsSkeleton />}>
+            <AdminStats />
+          </Suspense>
         </div>
 
         {/* Admin Links Grid */}
