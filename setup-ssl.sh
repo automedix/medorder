@@ -13,7 +13,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-DOMAIN="bestellungen.hausaerzte-im-grillepark.online"
+DOMAIN="bestellung.hausaerzte-im-grillepark.online"
 
 echo "📦 Installiere nginx und certbot..."
 apt update
@@ -23,7 +23,7 @@ echo "📝 Erstelle Nginx-Konfiguration..."
 cat > /etc/nginx/sites-available/bestellungen << 'EOF'
 server {
     listen 80;
-    server_name bestellungen.hausaerzte-im-grillepark.online;
+    server_name bestellung.hausaerzte-im-grillepark.online;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -54,7 +54,7 @@ systemctl reload nginx
 systemctl enable nginx
 
 echo "🔒 Erstelle Let's Encrypt Zertifikat..."
-certbot --nginx -d bestellungen.hausaerzte-im-grillepark.online --non-interactive --agree-tos --email admin@hausaerzte-im-grillepark.online
+certbot --nginx -d bestellung.hausaerzte-im-grillepark.online --non-interactive --agree-tos --email admin@hausaerzte-im-grillepark.online
 
 echo "🔥 Firewall anpassen (falls ufw aktiv)..."
 ufw allow 'Nginx Full' 2>/dev/null || true
@@ -66,7 +66,7 @@ echo "✅ SSL Setup abgeschlossen!"
 echo "============================================================"
 echo ""
 echo "🌐 Deine App läuft jetzt auf:"
-echo "   https://bestellungen.hausaerzte-im-grillepark.online"
+echo "   https://bestellung.hausaerzte-im-grillepark.online"
 echo ""
 echo "⚠️  Wichtig: Stelle sicher, dass Port 443 in der IONOS"
 echo "    Firewall freigegeben ist!"
