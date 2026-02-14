@@ -239,7 +239,7 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-4 p-3" bg-blue-100 rounded">
+                <div className="grid grid-cols-2 gap-4 mt-4 p-3 bg-blue-100 rounded">
                   <div>
                     <div className="text-sm text-black/60">Patient</div>
                     <div className="font-medium">{order.patient.lastName}, {order.patient.firstName}</div>
