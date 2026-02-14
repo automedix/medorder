@@ -219,11 +219,11 @@ export default function CareHomesClient() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {careHomes.map((careHome) => (
-                <tr key={careHome.id}>
-                  <td className="px-6 py-4 font-medium">{careHome.name}</td>
-                  <td className="px-6 py-4">{careHome.email}</td>
-                  <td className="px-6 py-4">{careHome.contactPerson}</td>
-                  <td className="px-6 py-4">{careHome.phone || '-'}</td>
+                <tr key={careHome.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/admin/carehomes/${careHome.id}/patients`)}>
+                  <td className="px-6 py-4 font-medium text-gray-900">{careHome.name}</td>
+                  <td className="px-6 py-4 text-gray-700">{careHome.email}</td>
+                  <td className="px-6 py-4 text-gray-700">{careHome.contactPerson}</td>
+                  <td className="px-6 py-4 text-gray-700">{careHome.phone || '-'}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       careHome.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
