@@ -175,7 +175,7 @@ export default function MyOrdersPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div className="p-3" style={{backgroundColor: '#4477BB'}} rounded">
+                    <div className="p-3 rounded bg-blue-100"">
                       <div className="text-sm" style={{color: '#6b7280'}}>Patient</div>
                       <div className="font-medium" style={{color: '#111827'}}>
                         {order.patient.lastName}, {order.patient.firstName}
@@ -184,7 +184,7 @@ export default function MyOrdersPage() {
                         {new Date(order.patient.dateOfBirth).toLocaleDateString('de-DE')}
                       </div>
                     </div>
-                    <div className="p-3" style={{backgroundColor: '#4477BB'}} rounded">
+                    <div className="p-3 rounded bg-blue-100"">
                       <div className="text-sm" style={{color: '#6b7280'}}>Artikel</div>
                       <div className="font-medium" style={{color: '#111827'}}>{order.totalItems} Positionen</div>
                     </div>
