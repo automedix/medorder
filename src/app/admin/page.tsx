@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Package, Tag, DollarSign, Building2, LogOut, Stethoscope, TrendingUp } from 'lucide-react'
+import { Package, Tag, DollarSign, Building2, LogOut, Stethoscope, TrendingUp, Archive } from 'lucide-react'
 
 export default async function AdminPage() {
   const session = await getSession()
@@ -43,6 +43,14 @@ export default async function AdminPage() {
       description: 'Zugänge verwalten und neue Einrichtungen anlegen',
       color: 'bg-orange-500',
       hoverColor: 'hover:bg-orange-600'
+    },
+    {
+      href: '/admin/archive',
+      icon: Archive,
+      title: 'Archiv',
+      description: 'Archivierte Patienten und deren Bestellhistorie',
+      color: 'bg-gray-600',
+      hoverColor: 'hover:bg-gray-700'
     }
   ]
 
@@ -144,7 +152,7 @@ export default async function AdminPage() {
         {/* Shortcuts */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl shadow-lg p-6 text-white">
           <h3 className="text-lg font-semibold mb-4">Schnellzugriff</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Link href="/admin/orders" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 text-center transition-colors">
               <Package className="w-6 h-6 mx-auto mb-2" />
               <span className="text-sm">Bestellungen</span>
@@ -160,6 +168,10 @@ export default async function AdminPage() {
             <Link href="/admin/carehomes" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 text-center transition-colors">
               <Building2 className="w-6 h-6 mx-auto mb-2" />
               <span className="text-sm">Pflegeheime</span>
+            </Link>
+            <Link href="/admin/archive" className="bg-white/10 hover:bg-white/20 rounded-xl p-4 text-center transition-colors">
+              <Archive className="w-6 h-6 mx-auto mb-2" />
+              <span className="text-sm">Archiv</span>
             </Link>
           </div>
         </div>

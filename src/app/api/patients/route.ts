@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
     const patients = await prisma.patient.findMany({
       where: { 
         careHomeId,
-        isActive: true 
+        isActive: true,
+        isArchived: false
       },
       orderBy: { lastName: 'asc' }
     })

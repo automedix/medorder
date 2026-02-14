@@ -32,6 +32,9 @@ model Patient {
   lastName      String
   dateOfBirth   DateTime
   isActive      Boolean   @default(true)
+  isArchived    Boolean   @default(false)
+  archiveNote   String?
+  archivedAt    DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   

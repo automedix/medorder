@@ -47,6 +47,8 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all')
   const [loadingPrices, setLoadingPrices] = useState<Record<string, boolean>>({})
+  const [archivingPatient, setArchivingPatient] = useState<string | null>(null)
+  const [archiveNote, setArchiveNote] = useState('')
 
   useEffect(() => {
     checkSession()
@@ -132,6 +134,47 @@ export default function AdminOrdersPage() {
       method: 'POST'
     })
     if (res.ok) {
+      fetchOrders()
+    }
+  }
+
+  const archivePatient = async (patientId: string) => {
+    if (!archiveNote.trim()) {
+      alert('Bitte geben Sie einen Vermerk ein (z.B. "verstorben", "umgezogen")')
+      return
+    }
+
+    const res = await fetch(`/api/admin/patients/${patientId}/archive`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isArchived: true, archiveNote })
+    })
+
+    if (res.ok) {
+      setArchivingPatient(null)
+      setArchiveNote('')
+      fetchOrders()
+    }
+  }
+
+  const [archivingPatient, setArchivingPatient] = useState<string | null>(null)
+  const [archiveNote, setArchiveNote] = useState('')
+
+  const archivePatient = async (patientId: string) => {
+    if (!archiveNote.trim()) {
+      alert('Bitte geben Sie einen Vermerk ein (z.B. "verstorben", "umgezogen")')
+      return
+    }
+
+    const res = await fetch(`/api/admin/patients/${patientId}/archive`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isArchived: true, archiveNote })
+    })
+
+    if (res.ok) {
+      setArchivingPatient(null)
+      setArchiveNote('')
       fetchOrders()
     }
   }
@@ -246,6 +289,48 @@ export default function AdminOrdersPage() {
                     <div className="text-sm text-gray-600">
                       {new Date(order.patient.dateOfBirth).toLocaleDateString('de-DE')}
                     </div>
+                    {archivingPatient === order.patient.id ? (
+                      <div className="mt-2 space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Vermerk (z.B. verstorben)"
+                          value={archiveNote}
+                          onChange={(e) => setArchiveNote(e.target.value)}
+                          className="w-full text-sm p-2 border rounded text-black"
+                        />
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              archivePatient(order.patient.id)
+                            }}
+                            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                          >
+                            Archivieren
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setArchivingPatient(null)
+                              setArchiveNote('')
+                            }}
+                            className="px-3 py-1 bg-gray-300 text-gray-800 text-sm rounded hover:bg-gray-400"
+                          >
+                            Abbrechen
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setArchivingPatient(order.patient.id)
+                        }}
+                        className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+                      >
+                        Patient archivieren
+                      </button>
+                    )}
                   </div>
                   <div>
                     <div className="text-sm text-gray-600 font-medium">Pflegeheim</div>
