@@ -42,17 +42,14 @@ export default function CareHomePatientsPage() {
 
   const fetchData = async () => {
     try {
-      // CareHome laden
+      // CareHome laden - inklusive Patienten
       const chRes = await fetch(`/api/carehomes/${careHomeId}`)
       if (chRes.ok) {
-        setCareHome(await chRes.json())
-      }
-
-      // Patienten laden
-      const pRes = await fetch(`/api/admin/carehomes/${careHomeId}/patients`)
-      if (pRes.ok) {
-        setPatients(await pRes.json())
-      } else if (pRes.status === 401) {
+        const data = await chRes.json()
+        setCareHome(data)
+        // Patienten kommen direkt mit dem CareHome
+        setPatients(data.patients || [])
+      } else if (chRes.status === 401) {
         setError('Nicht autorisiert')
         setTimeout(() => router.push('/login'), 2000)
       }
