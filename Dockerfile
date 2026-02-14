@@ -42,8 +42,8 @@ RUN npx prisma generate
 # Copy built app from builder stage
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/next.config.* ./
-# Copy public folder if it exists
-RUN if [ -d "/app/public" ]; then cp -r /app/public ./public; fi
+# Copy public folder (for static files like logo)
+COPY --from=builder /app/public ./public
 
 # Create data directory
 RUN mkdir -p /app/data
