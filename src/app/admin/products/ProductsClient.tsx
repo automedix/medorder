@@ -82,6 +82,27 @@ export default function ProductsClient() {
     }
   }
 
+  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+    if (!confirm(`Möchten Sie die Kategorie "${categoryName}" wirklich löschen?`)) {
+      return
+    }
+
+    setError('')
+    try {
+      const res = await fetch(`/api/categories?id=${categoryId}`, {
+        method: 'DELETE'
+      })
+      if (res.ok) {
+        fetchData()
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Fehler beim Löschen')
+      }
+    } catch (err) {
+      setError('Verbindungsfehler')
+    }
+  }
+
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -219,7 +240,8 @@ export default function ProductsClient() {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Beschreibung</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produkte</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktion</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -227,12 +249,26 @@ export default function ProductsClient() {
                     <tr key={category.id}>
                       <td className="px-6 py-4 font-medium" style={{color: "#111827"}}>{category.name}</td>
                       <td className="px-6 py-4" style={{color: "#4b5563"}}>{category.description || '-'}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4" style={{color: "#111827"}}>
                         <span className={`px-2 py-1 rounded-full text-xs ${
-                          category.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          (category.products?.length || 0) > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {category.isActive ? 'Aktiv' : 'Inaktiv'}
+                          {category.products?.length || 0} Produkte
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleDeleteCategory(category.id, category.name)}
+                          disabled={(category.products?.length || 0) > 0}
+                          className={`text-sm ${
+                            (category.products?.length || 0) > 0 
+                              ? 'text-gray-400 cursor-not-allowed' 
+                              : 'text-red-600 hover:text-red-800'
+                          }`}
+                          title={(category.products?.length || 0) > 0 ? 'Kategorie enthält noch Produkte' : 'Kategorie löschen'}
+                        >
+                          Löschen
+                        </button>
                       </td>
                     </tr>
                   ))}

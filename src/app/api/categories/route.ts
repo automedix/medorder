@@ -65,3 +65,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create category' }, { status: 500 })
   }
 }
+
+// DELETE: Kategorie löschen (soft delete)
+export async function DELETE(request: NextRequest) {
+  const session = await getSession()
+  
+  if (!session || session.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ error: 'ID erforderlich' }, { status: 400 })
+    }
+
+    // Prüfen ob Produkte in der Kategorie existieren
+    const productCount = await prisma.product.count({
+      where: { categoryId: id, isActive: true }
+    })
+
+    if (productCount > 0) {
+      return NextResponse.json({ 
+        error: `Kategorie kann nicht gelöscht werden. Es existieren noch ${productCount} aktive Produkte in dieser Kategorie.` 
+      }, { status: 400 })
+    }
+
+    const category = await prisma.category.update({
+      where: { id },
+      data: { isActive: false }
+    })
+    
+    return NextResponse.json(category)
+  } catch (error) {
+    console.error('Delete category error:', error)
+    return NextResponse.json({ error: 'Failed to delete category' }, { status: 500 })
+  }
+}
