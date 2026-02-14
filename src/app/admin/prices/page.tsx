@@ -265,7 +265,7 @@ export default function PricesPage() {
                   {editingPrice ? 'Aktualisieren' : 'Speichern'}
                 </button>
                 {editingPrice && (
-                  <button type="button" onClick={resetForm} className="ml-2 px-4 py-2 border rounded hover:bg-blue-100: '#4477BB'}}>
+                  <button type="button" onClick={resetForm} className="ml-2 px-4 py-2 border rounded hover:bg-blue-100">
                     Abbrechen
                   </button>
                 )}
@@ -291,7 +291,7 @@ export default function PricesPage() {
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">Noch keine Preise hinterlegt.</td></tr>
               ) : (
                 prices.map((price) => (
-                  <tr key={price.id} className="hover:bg-blue-100: '#4477BB'}}>
+                  <tr key={price.id} className="hover:bg-blue-100">
                     <td className="px-4 py-3">
                       <div className="font-medium">{price.product.name}</div>
                       <div className="text-sm text-gray-500">{price.product.unit}</div>

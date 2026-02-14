@@ -301,7 +301,7 @@ export default function NewOrderPage() {
             <div className="flex space-x-4">
               <button
                 onClick={() => setStep(2)}
-                className="px-4 py-2 border rounded hover:bg-blue-100: '#4477BB'}}
+                className="px-4 py-2 border rounded hover:bg-blue-100"
                 style={{color: '#374151'}}
               >
                 ← Zurück
@@ -338,7 +338,7 @@ export default function NewOrderPage() {
                   setNotes('')
                   setSelectedPatient(null)
                 }}
-                className="px-4 py-2 border rounded hover:bg-blue-100: '#4477BB'}}
+                className="px-4 py-2 border rounded hover:bg-blue-100"
                 style={{color: '#374151'}}
               >
                 Neue Bestellung
