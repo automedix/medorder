@@ -53,7 +53,6 @@ export default function LoginPage() {
               src="/logo.png"
               alt="Hausärzte im Grillepark"
               className="max-w-[280px] w-full h-auto"
-              style={{ maxHeight: '100px' }}
               onError={(e) => {
                 // Fallback falls Logo nicht lädt
                 const target = e.target as HTMLImageElement;
@@ -99,7 +98,7 @@ export default function LoginPage() {
             <img
               src="/logo.png"
               alt="Hausärzte im Grillepark"
-              className="max-w-[220px] w-full h-auto"
+              className="max-w-[240px] w-full h-auto"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
