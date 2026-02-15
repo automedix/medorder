@@ -328,7 +328,7 @@ export default function AdminOrdersPage() {
                         <div key={idx} className="bg-white rounded-lg shadow-sm overflow-hidden">
                           {/* Item Header */}
                           <div className="p-3 bg-gray-100 flex justify-between items-center">
-                            <span className="font-medium">{item.productName}</span>
+                            <span className="font-medium text-gray-900">{item.productName}</span>
                             <span className="font-semibold text-blue-700">{item.quantity} {item.productUnit}</span>
                           </div>
                           
