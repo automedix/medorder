@@ -1,13 +1,61 @@
-import { getSession } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { ShoppingCart, ClipboardList, Users, LogOut, Building2 } from 'lucide-react'
+'use client'
 
-export default async function DashboardPage() {
-  const session = await getSession()
-  
-  if (!session || session.role !== 'careHome') {
-    redirect('/login')
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { ShoppingCart, ClipboardList, Users, LogOut, Building2, Shield, AlertCircle, Lock } from 'lucide-react'
+
+interface Session {
+  name: string
+  email: string
+}
+
+export default function DashboardPage() {
+  const router = useRouter()
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(true)
+  const [privacyConfirmed, setPrivacyConfirmed] = useState(false)
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/session')
+      const data = await res.json()
+      
+      if (!data.session || data.session.role !== 'careHome') {
+        router.push('/login')
+        return
+      }
+      
+      setSession(data.session)
+    } catch {
+      router.push('/login')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePrivacyConfirm = () => {
+    if (privacyConfirmed) {
+      setShowPrivacyModal(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    await fetch('/api/logout', { method: 'POST' })
+    router.push('/login')
+  }
+
+  if (loading || !session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-gray-600">Laden...</div>
+      </div>
+    )
   }
 
   const quickLinks = [
@@ -39,6 +87,100 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Privacy Modal */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Datenschutzhinweis</h2>
+                  <p className="text-blue-100 text-sm">Wichtige Information vor dem Start</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertCircle className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Gesundheitsdaten sind sensibel</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      Sie haben Zugriff auf personenbezogene Gesundheitsdaten Ihrer Patienten. 
+                      Diese Daten unterliegen dem besonderen Schutz nach DSGVO und sind streng vertraulich.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                    <Lock className="w-4 h-4 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Schützen Sie Ihre Zugangsdaten</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      Ihr Passwort darf niemals an Dritte weitergegeben werden. Bewahren Sie es sicher auf 
+                      undMelden Sie verdächtige Aktivitäten sofort der Praxis.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-blue-600 text-sm font-bold">!</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Bei Verdacht: Sofort melden</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      Falls Sie den Verdacht haben, dass Unberechtigte Zugang erhalten haben könnten 
+                      oder Ihre Zugangsdaten kompromittiert wurden, informieren Sie die Praxis umgehend.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Checkbox */}
+              <div className="mt-6 pt-4 border-t border-gray-100">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={privacyConfirmed}
+                    onChange={(e) => setPrivacyConfirmed(e.target.checked)}
+                    className="mt-1 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
+                    Ich habe die Datenschutzhinweise gelesen und verstanden. 
+                    Ich verpflichte mich, Gesundheitsdaten vertraulich zu behandeln 
+                    und bei Verdacht auf Datenmissbrauch umgehend zu melden.
+                  </span>
+                </label>
+              </div>
+
+              {/* Button */}
+              <button
+                onClick={handlePrivacyConfirm}
+                disabled={!privacyConfirmed}
+                className={`mt-6 w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+                  privacyConfirmed
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/25'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Dashboard öffnen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,15 +200,13 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-gray-900">{session.name}</p>
                 <p className="text-xs text-gray-500">{session.email}</p>
               </div>
-              <form action="/api/logout" method="POST">
-                <button 
-                  type="submit" 
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="hidden sm:inline">Abmelden</span>
-                </button>
-              </form>
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Abmelden</span>
+              </button>
             </div>
           </div>
         </div>
@@ -131,7 +271,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Tips Section */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mt-8 grid grid-cols-1 md:grid-2 gap-6">
           <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
             <h4 className="font-semibold text-amber-800 mb-2">💡 Tipp</h4>
             <p className="text-sm text-amber-700">
