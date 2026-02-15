@@ -14,11 +14,17 @@ export async function PATCH(
   }
 
   try {
-    const { id } = await params
+    // ID aus der URL parsen (robuster für alle Next.js Versionen)
+    const url = new URL(request.url)
+    const pathParts = url.pathname.split('/')
+    const id = pathParts[pathParts.length - 1]
     
-    if (!id) {
+    if (!id || id === '[id]') {
+      console.error('PATCH prices: No ID found in URL:', url.pathname)
       return NextResponse.json({ error: 'Preis-ID erforderlich' }, { status: 400 })
     }
+
+    console.log('PATCH prices: Updating price with ID:', id)
 
     const body = await request.json()
     const { pzn, supplier, price, packSize, isActive } = body
@@ -35,9 +41,10 @@ export async function PATCH(
       data: updateData,
     })
 
+    console.log('PATCH prices: Successfully updated:', productPrice.id)
     return NextResponse.json(productPrice)
   } catch (error) {
-    console.error('Error updating price:', error)
+    console.error('PATCH prices error:', error)
     return NextResponse.json({ error: 'Failed to update price' }, { status: 500 })
   }
 }
@@ -54,20 +61,27 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    // ID aus der URL parsen
+    const url = new URL(request.url)
+    const pathParts = url.pathname.split('/')
+    const id = pathParts[pathParts.length - 1]
     
-    if (!id) {
+    if (!id || id === '[id]') {
+      console.error('DELETE prices: No ID found in URL:', url.pathname)
       return NextResponse.json({ error: 'Preis-ID erforderlich' }, { status: 400 })
     }
+
+    console.log('DELETE prices: Soft-deleting price with ID:', id)
 
     await prisma.productPrice.update({
       where: { id },
       data: { isActive: false },
     })
 
+    console.log('DELETE prices: Successfully deleted:', id)
     return NextResponse.json({ message: 'Preis gelöscht' })
   } catch (error) {
-    console.error('Error deleting price:', error)
+    console.error('DELETE prices error:', error)
     return NextResponse.json({ error: 'Failed to delete price' }, { status: 500 })
   }
 }
