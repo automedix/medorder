@@ -335,10 +335,10 @@ export default function AdminOrdersPage() {
                           {/* Price Suggestions */}
                           <div className="p-4">
                             {loadingPrices[`${order.id}-${item.productId}`] ? (
-                              <div className="text-black/60 text-sm">Lade Preisvorschläge...</div>
+                              <div className="text-gray-900 text-sm">Lade Preisvorschläge...</div>
                             ) : item.cheapestPrices && item.cheapestPrices.length > 0 ? (
                               <div>
-                                <div className="text-xs text-black/60 mb-2">Günstigste Anbieter für Rezept:</div>
+                                <div className="text-xs text-gray-900 font-medium mb-2">Günstigste Anbieter für Rezept:</div>
                                 <div className="grid gap-2">
                                   {item.cheapestPrices.map((price, pidx) => (
                                     <div 
@@ -352,15 +352,15 @@ export default function AdminOrdersPage() {
                                           <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">Bester Preis</span>
                                         )}
                                         <div>
-                                          <div className="font-mono text-sm text-black/70">PZN: {price.pzn}</div>
-                                          <div className="font-medium">{price.supplier}</div>
+                                          <div className="font-mono text-sm text-gray-900">PZN: {price.pzn}</div>
+                                          <div className="font-medium text-gray-900">{price.supplier}</div>
                                           {price.packSize && (
-                                            <div className="text-xs text-black/60">{price.packSize}</div>
+                                            <div className="text-xs text-gray-700">{price.packSize}</div>
                                           )}
                                         </div>
                                       </div>
                                       <div className="text-right">
-                                        <div className={`font-bold text-lg ${pidx === 0 ? 'text-green-700' : 'text-black/80'}`}>
+                                        <div className={`font-bold text-lg ${pidx === 0 ? 'text-green-700' : 'text-gray-900'}`}>
                                           {formatPrice(price.price)}
                                         </div>
                                       </div>
@@ -369,7 +369,7 @@ export default function AdminOrdersPage() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="text-black/60 text-sm italic">
+                              <div className="text-gray-900 text-sm italic">
                                 Keine Preisvorschläge für dieses Produkt hinterlegt.
                                 <Link href="/admin/prices" className="text-blue-600 hover:underline ml-2">
                                   Preis hinzufügen →
@@ -395,7 +395,7 @@ export default function AdminOrdersPage() {
           ))}
 
           {filteredOrders.length === 0 && (
-            <div className="text-center py-12 text-black/60">
+            <div className="text-center py-12 text-gray-900">
               Keine Bestellungen gefunden
             </div>
           )}
