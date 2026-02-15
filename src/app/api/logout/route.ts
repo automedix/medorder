@@ -6,8 +6,8 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies()
     cookieStore.delete('session')
     
-    // Sicherer relativer Redirect - keine Host-Header Injection möglich
-    return NextResponse.redirect(new URL('/login', request.url))
+    // Sicherer Redirect zur Login-Seite
+    return NextResponse.redirect(new URL('/', request.url))
   } catch (error) {
     console.error('Logout error')
     return NextResponse.json(
