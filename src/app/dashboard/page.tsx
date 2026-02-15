@@ -14,11 +14,23 @@ export default function DashboardPage() {
   const router = useRouter()
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [showPrivacyModal, setShowPrivacyModal] = useState(true)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
   const [privacyConfirmed, setPrivacyConfirmed] = useState(false)
 
   useEffect(() => {
     checkAuth()
+  }, [])
+
+  // Prüfen ob Popup angezeigt werden soll (nur nach frischem Login)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const shouldShow = sessionStorage.getItem('showPrivacyNotice') === 'true'
+      if (shouldShow) {
+        setShowPrivacyModal(true)
+        // Flag sofort löschen, damit es nur einmal angezeigt wird
+        sessionStorage.removeItem('showPrivacyNotice')
+      }
+    }
   }, [])
 
   const checkAuth = async () => {

@@ -35,6 +35,8 @@ export default function LoginPage() {
       if (role === 'admin') {
         router.push('/admin')
       } else {
+        // Flag setzen für frisches Login → Datenschutz-Popup anzeigen
+        sessionStorage.setItem('showPrivacyNotice', 'true')
         router.push('/dashboard')
       }
     } catch (err) {
