@@ -6,8 +6,6 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getSession()
     
-    console.log('GET /api/patients - Session:', JSON.stringify(session))
-    
     if (!session) {
       return NextResponse.json({ error: 'Nicht eingeloggt' }, { status: 401 })
     }
@@ -22,8 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Keine CareHome ID' }, { status: 400 })
     }
 
-    console.log('Fetching patients for careHomeId:', careHomeId)
-
+    // Keine Debug-Logs mit Session-Daten (PII-Schutz)
     const patients = await prisma.patient.findMany({
       where: { 
         careHomeId,
@@ -32,10 +29,9 @@ export async function GET(request: NextRequest) {
       orderBy: { lastName: 'asc' }
     })
     
-    console.log('Found patients:', patients.length)
     return NextResponse.json(patients)
   } catch (error) {
-    console.error('Error fetching patients:', error)
+    console.error('Error fetching patients') // Keine Details loggen
     return NextResponse.json({ error: 'Datenbankfehler' }, { status: 500 })
   }
 }
@@ -43,8 +39,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
-    
-    console.log('POST /api/patients - Session:', JSON.stringify(session))
     
     if (!session) {
       return NextResponse.json({ error: 'Nicht eingeloggt' }, { status: 401 })
@@ -63,27 +57,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { firstName, lastName, dateOfBirth } = body
     
-    console.log('Creating patient:', { firstName, lastName, dateOfBirth, careHomeId })
-    
     if (!firstName || !lastName || !dateOfBirth) {
       return NextResponse.json({ error: 'Alle Felder sind erforderlich' }, { status: 400 })
+    }
+
+    // Input-Validierung
+    const trimmedFirstName = String(firstName).trim().slice(0, 100)
+    const trimmedLastName = String(lastName).trim().slice(0, 100)
+    
+    if (!trimmedFirstName || !trimmedLastName) {
+      return NextResponse.json({ error: 'Ungültige Eingabe' }, { status: 400 })
     }
 
     const patient = await prisma.patient.create({
       data: {
         careHomeId,
-        firstName,
-        lastName,
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
         dateOfBirth: new Date(dateOfBirth),
         isActive: true,
         isArchived: false
       }
     })
     
+    // Nur ID loggen, keine PII
     console.log('Patient created:', patient.id)
     return NextResponse.json(patient, { status: 201 })
   } catch (error: any) {
-    console.error('Error creating patient:', error)
-    return NextResponse.json({ error: error.message || 'Datenbankfehler' }, { status: 500 })
+    console.error('Error creating patient') // Keine Details loggen
+    return NextResponse.json({ error: 'Datenbankfehler' }, { status: 500 })
   }
 }

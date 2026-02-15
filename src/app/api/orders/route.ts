@@ -3,6 +3,16 @@ import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import nodemailer from 'nodemailer'
 
+// HTML Escaping für E-Mail-Inhalte
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 export async function POST(request: NextRequest) {
   const session = await getSession()
   
@@ -10,8 +20,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Fix: userId statt id verwenden
-  const careHomeId = session.userId || (session as any).id
+  const careHomeId = session.userId
   
   try {
     const body = await request.json()
@@ -21,43 +30,66 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Patient und Artikel erforderlich' }, { status: 400 })
     }
 
-    // Generate order number: BM-YYYYMMDD-XXX
-    const today = new Date()
-    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '')
-    const count = await prisma.order.count({
-      where: {
-        createdAt: {
-          gte: new Date(today.setHours(0, 0, 0, 0))
-        }
-      }
-    })
-    const orderNumber = `BM-${dateStr}-${String(count + 1).padStart(3, '0')}`
-
-    // Create order
-    const order = await prisma.order.create({
-      data: {
-        careHomeId,
-        patientId,
-        orderNumber,
-        totalItems: items.reduce((sum: number, item: any) => sum + item.quantity, 0),
-        notes,
-        items: {
-          create: items.map((item: any) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            productName: item.name,
-            productUnit: item.unit
-          }))
-        }
-      },
-      include: {
-        careHome: true,
-        patient: true,
-        items: true
-      }
+    // IDOR-Schutz: Prüfen ob Patient zum Pflegeheim gehört
+    const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      select: { careHomeId: true }
     })
 
-    // Send email notification
+    if (!patient) {
+      return NextResponse.json({ error: 'Patient nicht gefunden' }, { status: 404 })
+    }
+
+    if (patient.careHomeId !== careHomeId) {
+      return NextResponse.json({ error: 'Zugriff verweigert' }, { status: 403 })
+    }
+
+    // Atomare Bestellnummer mit DB-Transaktion
+    const order = await prisma.$transaction(async (tx) => {
+      // Heutige Bestellungen zählen
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      const count = await tx.order.count({
+        where: {
+          createdAt: {
+            gte: today,
+            lt: tomorrow
+          }
+        }
+      })
+
+      const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '')
+      const orderNumber = `BM-${dateStr}-${String(count + 1).padStart(3, '0')}`
+
+      // Bestellung erstellen
+      return tx.order.create({
+        data: {
+          careHomeId,
+          patientId,
+          orderNumber,
+          totalItems: items.reduce((sum: number, item: any) => sum + item.quantity, 0),
+          notes: notes ? String(notes).slice(0, 1000) : null, // Länge limitieren
+          items: {
+            create: items.slice(0, 50).map((item: any) => ({ // Max 50 Artikel
+              productId: String(item.productId).slice(0, 100),
+              quantity: Math.max(1, Math.min(9999, parseInt(item.quantity) || 1)),
+              productName: String(item.name).slice(0, 255),
+              productUnit: String(item.unit).slice(0, 50)
+            }))
+          }
+        },
+        include: {
+          careHome: true,
+          patient: true,
+          items: true
+        }
+      })
+    })
+
+    // E-Mail mit escapten Werten
     try {
       const transporter = nodemailer.createTransporter({
         host: process.env.SMTP_HOST,
@@ -69,9 +101,9 @@ export async function POST(request: NextRequest) {
       })
 
       const emailHtml = `
-        <h2>Neue Bestellung ${order.orderNumber}</h2>
-        <p><strong>Pflegeheim:</strong> ${order.careHome.name}</p>
-        <p><strong>Patient:</strong> ${order.patient.lastName}, ${order.patient.firstName}</p>
+        <h2>Neue Bestellung ${escapeHtml(order.orderNumber)}</h2>
+        <p><strong>Pflegeheim:</strong> ${escapeHtml(order.careHome.name)}</p>
+        <p><strong>Patient:</strong> ${escapeHtml(order.patient.lastName)}, ${escapeHtml(order.patient.firstName)}</p>
         <p><strong>Geburtsdatum:</strong> ${new Date(order.patient.dateOfBirth).toLocaleDateString('de-DE')}</p>
         
         <h3>Bestellte Artikel:</h3>
@@ -82,13 +114,13 @@ export async function POST(request: NextRequest) {
           </tr>
           ${order.items.map(item => `
             <tr>
-              <td>${item.productName}</td>
-              <td>${item.quantity} ${item.productUnit}</td>
+              <td>${escapeHtml(item.productName)}</td>
+              <td>${escapeHtml(String(item.quantity))} ${escapeHtml(item.productUnit)}</td>
             </tr>
           `).join('')}
         </table>
         
-        ${notes ? `<p><strong>Hinweis:</strong> ${notes}</p>` : ''}
+        ${order.notes ? `<p><strong>Hinweis:</strong> ${escapeHtml(order.notes)}</p>` : ''}
         
         <p>Bestelldatum: ${new Date(order.createdAt).toLocaleString('de-DE')}</p>
       `
@@ -100,13 +132,14 @@ export async function POST(request: NextRequest) {
         html: emailHtml
       })
     } catch (emailErr) {
-      console.error('Email failed:', emailErr)
+      // Nicht blockieren, aber loggen
+      console.error('Email delivery failed')
     }
 
     return NextResponse.json({ orderNumber: order.orderNumber })
   } catch (error) {
-    console.error('Order creation failed:', error)
-    return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
+    console.error('Order creation failed')
+    return NextResponse.json({ error: 'Bestellung konnte nicht erstellt werden' }, { status: 500 })
   }
 }
 
@@ -120,16 +153,14 @@ export async function GET(request: NextRequest) {
   try {
     let where: any = {}
     
-    // Fix: userId statt id
     if (session.role === 'careHome') {
-      where.careHomeId = session.userId || (session as any).id
+      where.careHomeId = session.userId
     }
     
-    // Berechne Datum vor 7 Tagen (für completedFilter)
+    // Berechne Datum vor 7 Tagen
     const oneWeekAgo = new Date()
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
     
-    // Entweder PENDING ODER (COMPLETED UND nicht älter als 1 Woche)
     where.OR = [
       { status: 'PENDING' },
       { 
@@ -166,14 +197,14 @@ export async function GET(request: NextRequest) {
         }
       },
       orderBy: [
-        { status: 'asc' },      // PENDING zuerst (alphabetisch vor COMPLETED)
-        { createdAt: 'desc' }   // Neueste zuerst
+        { status: 'asc' },
+        { createdAt: 'desc' }
       ]
     })
 
     return NextResponse.json(orders)
   } catch (error) {
-    console.error('Error fetching orders:', error)
+    console.error('Error fetching orders')
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 })
   }
 }

@@ -3,9 +3,13 @@ import { cookies } from 'next/headers'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'medorder-secret-key-change-in-production'
-)
+// Sicherheitskritisch: JWT Secret MUSS aus Umgebungsvariable kommen
+const secretKey = process.env.NEXTAUTH_SECRET
+if (!secretKey) {
+  throw new Error('NEXTAUTH_SECRET ist nicht gesetzt. Die Anwendung kann nicht starten.')
+}
+
+const JWT_SECRET = new TextEncoder().encode(secretKey)
 
 export interface JWTPayload {
   userId: string
@@ -20,7 +24,7 @@ export async function createToken(payload: Omit<JWTPayload, 'iat' | 'exp'>) {
   const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('30d')
+    .setExpirationTime('8h') // Kürzere Sessions für bessere Sicherheit
     .sign(JWT_SECRET)
   
   return token
@@ -46,11 +50,13 @@ export async function getSession() {
 
 export async function setSessionCookie(token: string) {
   const cookieStore = await cookies()
+  const isProduction = process.env.NODE_ENV === 'production'
+  
   cookieStore.set('session', token, {
     httpOnly: true,
-    secure: false,
-    sameSite: 'lax',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    secure: isProduction, // Nur in Production secure
+    sameSite: 'strict',   // CSRF-Schutz
+    maxAge: 8 * 60 * 60,  // 8 Stunden statt 30 Tage
     path: '/'
   })
 }
