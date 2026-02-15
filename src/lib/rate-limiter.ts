@@ -1,41 +1,45 @@
-// Einfacher In-Memory Rate Limiter für Login-Versuche
-// In Production besser Redis verwenden
-
-interface RateLimitEntry {
-  attempts: number
-  firstAttempt: number
-  blockedUntil?: number
-}
-
-const loginAttempts = new Map<string, RateLimitEntry>()
+import { prisma } from './prisma'
 
 const MAX_ATTEMPTS = 5
 const WINDOW_MS = 15 * 60 * 1000 // 15 Minuten
-const BLOCK_DURATION_MS = 30 * 60 * 1000 // 30 Minuten Block
+const BLOCK_DURATION_MS = 30 * 60 * 1000 // 30 Minuten
 
-export function checkRateLimit(identifier: string): { allowed: boolean; remaining: number; blocked?: boolean } {
-  const now = Date.now()
-  const entry = loginAttempts.get(identifier)
+export async function checkRateLimit(identifier: string): Promise<{ allowed: boolean; remaining: number; blocked?: boolean }> {
+  const now = new Date()
+  
+  // Alte Einträge löschen (älter als 1 Stunde)
+  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+  await prisma.loginAttempt.deleteMany({
+    where: {
+      updatedAt: { lt: oneHourAgo },
+      blockedUntil: null
+    }
+  })
 
-  // Prüfen ob geblockt
-  if (entry?.blockedUntil && now < entry.blockedUntil) {
-    return { allowed: false, remaining: 0, blocked: true }
-  }
+  // Eintrag für diesen Identifier finden
+  const entry = await prisma.loginAttempt.findFirst({
+    where: { identifier: identifier.toLowerCase() }
+  })
 
-  // Block aufheben wenn Zeit abgelaufen
-  if (entry?.blockedUntil && now >= entry.blockedUntil) {
-    loginAttempts.delete(identifier)
-    return { allowed: true, remaining: MAX_ATTEMPTS }
-  }
-
-  // Keine Einträge vorhanden
   if (!entry) {
     return { allowed: true, remaining: MAX_ATTEMPTS }
   }
 
+  // Prüfen ob geblockt
+  if (entry.blockedUntil && entry.blockedUntil > now) {
+    return { allowed: false, remaining: 0, blocked: true }
+  }
+
+  // Block aufheben wenn Zeit abgelaufen
+  if (entry.blockedUntil && entry.blockedUntil <= now) {
+    await prisma.loginAttempt.delete({ where: { id: entry.id } })
+    return { allowed: true, remaining: MAX_ATTEMPTS }
+  }
+
   // Zeitfenster abgelaufen?
-  if (now - entry.firstAttempt > WINDOW_MS) {
-    loginAttempts.delete(identifier)
+  const windowExpired = now.getTime() - entry.firstAttempt.getTime() > WINDOW_MS
+  if (windowExpired) {
+    await prisma.loginAttempt.delete({ where: { id: entry.id } })
     return { allowed: true, remaining: MAX_ATTEMPTS }
   }
 
@@ -44,51 +48,68 @@ export function checkRateLimit(identifier: string): { allowed: boolean; remainin
   return { allowed: remaining > 0, remaining }
 }
 
-export function recordFailedAttempt(identifier: string): void {
-  const now = Date.now()
-  const entry = loginAttempts.get(identifier)
+export async function recordFailedAttempt(identifier: string): Promise<void> {
+  const now = new Date()
+  const identifierLower = identifier.toLowerCase()
+  
+  const entry = await prisma.loginAttempt.findFirst({
+    where: { identifier: identifierLower }
+  })
 
-  if (!entry || now - entry.firstAttempt > WINDOW_MS) {
+  if (!entry) {
     // Neue Serie starten
-    loginAttempts.set(identifier, {
-      attempts: 1,
-      firstAttempt: now
+    await prisma.loginAttempt.create({
+      data: {
+        identifier: identifierLower,
+        attempts: 1,
+        firstAttempt: now
+      }
     })
   } else {
-    // Serie fortsetzen
-    const newAttempts = entry.attempts + 1
+    // Zeitfenster abgelaufen?
+    const windowExpired = now.getTime() - entry.firstAttempt.getTime() > WINDOW_MS
     
-    if (newAttempts >= MAX_ATTEMPTS) {
-      // Blockieren
-      loginAttempts.set(identifier, {
-        attempts: newAttempts,
-        firstAttempt: entry.firstAttempt,
-        blockedUntil: now + BLOCK_DURATION_MS
+    if (windowExpired) {
+      // Reset und neu starten
+      await prisma.loginAttempt.update({
+        where: { id: entry.id },
+        data: {
+          attempts: 1,
+          firstAttempt: now,
+          blockedUntil: null,
+          updatedAt: now
+        }
       })
     } else {
-      loginAttempts.set(identifier, {
-        attempts: newAttempts,
-        firstAttempt: entry.firstAttempt
-      })
+      // Serie fortsetzen
+      const newAttempts = entry.attempts + 1
+      
+      if (newAttempts >= MAX_ATTEMPTS) {
+        // Blockieren
+        const blockedUntil = new Date(now.getTime() + BLOCK_DURATION_MS)
+        await prisma.loginAttempt.update({
+          where: { id: entry.id },
+          data: {
+            attempts: newAttempts,
+            blockedUntil: blockedUntil,
+            updatedAt: now
+          }
+        })
+      } else {
+        await prisma.loginAttempt.update({
+          where: { id: entry.id },
+          data: {
+            attempts: newAttempts,
+            updatedAt: now
+          }
+        })
+      }
     }
   }
 }
 
-export function clearAttempts(identifier: string): void {
-  loginAttempts.delete(identifier)
+export async function clearAttempts(identifier: string): Promise<void> {
+  await prisma.loginAttempt.deleteMany({
+    where: { identifier: identifier.toLowerCase() }
+  })
 }
-
-// Cleanup alle 10 Minuten
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, entry] of loginAttempts.entries()) {
-    // Löschen wenn Zeitfenster abgelaufen und nicht mehr geblockt
-    if (!entry.blockedUntil && now - entry.firstAttempt > WINDOW_MS) {
-      loginAttempts.delete(key)
-    }
-    // Oder wenn Block abgelaufen
-    if (entry.blockedUntil && now >= entry.blockedUntil) {
-      loginAttempts.delete(key)
-    }
-  }
-}, 10 * 60 * 1000)

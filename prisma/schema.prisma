@@ -134,3 +134,16 @@ model Admin {
   
   @@map("admins")
 }
+
+model LoginAttempt {
+  id            String    @id @default(cuid())
+  identifier    String    // Email oder IP
+  attempts      Int       @default(1)
+  firstAttempt  DateTime  @default(now())
+  blockedUntil  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([identifier])
+  @@map("login_attempts")
+}

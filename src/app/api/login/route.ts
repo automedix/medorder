@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate Limiting basierend auf E-Mail
-    const rateLimit = checkRateLimit(email.toLowerCase())
+    const rateLimit = await checkRateLimit(email.toLowerCase())
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: 'Zu viele fehlgeschlagene Versuche. Bitte warten Sie 30 Minuten.' },
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const user = await authenticateUser(email, password, role)
 
     if (!user) {
-      recordFailedAttempt(email.toLowerCase())
+      await recordFailedAttempt(email.toLowerCase())
       // Generische Fehlermeldung (keine Username Enumeration)
       return NextResponse.json(
         { error: 'Anmeldedaten ungültig' },
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Erfolgreicher Login - Attempts zurücksetzen
-    clearAttempts(email.toLowerCase())
+    await clearAttempts(email.toLowerCase())
 
     const token = await createToken(user)
     await setSessionCookie(token)
