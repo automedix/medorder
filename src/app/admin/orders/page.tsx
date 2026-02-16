@@ -18,6 +18,7 @@ interface OrderItem {
   productUnit: string
   productId: string
   cheapestPrices?: PriceSuggestion[]
+  verifiedProductName?: string  // Für Debugging: Produktname aus der API
 }
 
 interface Order {
@@ -88,7 +89,11 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch(`/api/products/${productId}/cheapest`)
       if (res.ok) {
-        const prices = await res.json()
+        const data = await res.json()
+        // API gibt jetzt {product, prices} zurück
+        const prices = data.prices || []
+        const verifiedProductName = data.product?.name
+        
         setOrders(prevOrders => 
           prevOrders.map(order => {
             if (order.id !== orderId) return order
@@ -96,7 +101,7 @@ export default function AdminOrdersPage() {
               ...order,
               items: order.items.map(item => 
                 item.productId === productId 
-                  ? { ...item, cheapestPrices: prices }
+                  ? { ...item, cheapestPrices: prices, verifiedProductName }
                   : item
               )
             }
@@ -338,7 +343,10 @@ export default function AdminOrdersPage() {
                               <div className="text-gray-900 text-sm">Lade Preisvorschläge...</div>
                             ) : item.cheapestPrices && item.cheapestPrices.length > 0 ? (
                               <div>
-                                <div className="text-xs text-gray-900 font-medium mb-2">Günstigste Anbieter für Rezept:</div>
+                                <div className="text-xs text-gray-900 font-medium mb-2">
+                                  Günstigste Anbieter für <strong>"{item.verifiedProductName || item.productName}"</strong>:
+                                  <span className="text-xs text-gray-500 ml-1">(nur dieses Produkt)</span>
+                                </div>
                                 <div className="grid gap-2">
                                   {item.cheapestPrices.map((price, pidx) => (
                                     <div 
