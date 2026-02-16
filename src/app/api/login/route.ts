@@ -1,58 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateUser, createToken, setSessionCookie } from '@/lib/auth'
-import { checkRateLimit, recordFailedAttempt, clearAttempts } from '@/lib/rate-limiter'
+import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
+import { SignJWT } from 'jose'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, role } = await request.json()
+    const { email, password, role: providedRole } = await request.json()
 
-    if (!email || !password || !role) {
-      return NextResponse.json(
-        { error: 'Anmeldedaten unvollständig' },
-        { status: 400 }
-      )
+    if (!email || !password) {
+      return NextResponse.json({ error: 'E-Mail und Passwort erforderlich' }, { status: 400 })
     }
 
-    // Rate Limiting basierend auf E-Mail
-    const rateLimit = await checkRateLimit(email.toLowerCase())
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: 'Zu viele fehlgeschlagene Versuche. Bitte warten Sie 30 Minuten.' },
-        { status: 429 }
-      )
-    }
-
-    const user = await authenticateUser(email, password, role)
+    let user = await prisma.admin.findUnique({ where: { email: email.toLowerCase() } })
+    let role = 'admin'
 
     if (!user) {
-      await recordFailedAttempt(email.toLowerCase())
-      // Generische Fehlermeldung (keine Username Enumeration)
-      return NextResponse.json(
-        { error: 'Anmeldedaten ungültig' },
-        { status: 401 }
-      )
+      user = await prisma.careHome.findUnique({ where: { email: email.toLowerCase() } })
+      role = 'careHome'
     }
 
-    // Erfolgreicher Login - Attempts zurücksetzen
-    await clearAttempts(email.toLowerCase())
+    if (providedRole === 'admin') {
+      user = await prisma.admin.findUnique({ where: { email: email.toLowerCase() } })
+      role = 'admin'
+    } else if (providedRole === 'careHome') {
+      user = await prisma.careHome.findUnique({ where: { email: email.toLowerCase() } })
+      role = 'careHome'
+    }
 
-    const token = await createToken(user)
-    await setSessionCookie(token)
+    if (!user || !await bcrypt.compare(password, user.passwordHash)) {
+      return NextResponse.json({ error: 'Ungültige Anmeldedaten' }, { status: 401 })
+    }
 
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: user.userId,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      }
-    })
+    const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!)
+    const token = await new SignJWT({ userId: user.id, email: user.email, role })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('24h')
+      .sign(secret)
+
+    const response = NextResponse.json({ success: true, user: { email: user.email, role } })
+    response.cookies.set('session', token, { httpOnly: true, secure: false, sameSite: 'lax', maxAge: 86400, path: '/' })
+    
+    return response
   } catch (error) {
-    console.error('Login error') // Keine sensiblen Daten loggen
-    return NextResponse.json(
-      { error: 'Interner Serverfehler' },
-      { status: 500 }
-    )
+    console.error('Login error:', error)
+    return NextResponse.json({ error: 'Serverfehler' }, { status: 500 })
   }
 }
