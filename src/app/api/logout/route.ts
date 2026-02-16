@@ -1,18 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
-export async function POST(request: NextRequest) {
-  try {
-    const cookieStore = await cookies()
-    cookieStore.delete('session')
-    
-    // Sicherer Redirect zur Login-Seite
-    return NextResponse.redirect(new URL('/', request.url))
-  } catch (error) {
-    console.error('Logout error')
-    return NextResponse.json(
-      { error: 'Logout fehlgeschlagen' },
-      { status: 500 }
-    )
-  }
+export async function GET() {
+  const response = NextResponse.redirect(new URL('/login', process.env.NEXTAUTH_URL || 'http://localhost:3000'))
+  response.cookies.delete('session')
+  return response
+}
+
+export async function POST() {
+  const response = NextResponse.redirect(new URL('/login', process.env.NEXTAUTH_URL || 'http://localhost:3000'))
+  response.cookies.delete('session')
+  return response
 }
