@@ -3,173 +3,92 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { SignJWT } from 'jose'
 
-// Rate Limiting Konfiguration
+// Rate Limiting: Max 5 Versuche, dann 30 Min Sperre
 const MAX_ATTEMPTS = 5
-const LOCKOUT_DURATION = 30 * 60 * 1000 // 30 Minuten
+const LOCKOUT_DURATION = 30 * 60 * 1000
 
-// Speichert Login-Versuche im Speicher (für Produktion: Redis empfohlen)
-interface AttemptRecord {
-  count: number
-  firstAttempt: number
-  lockedUntil?: number
-}
-
-const loginAttempts = new Map<string, AttemptRecord>()
-
-// Cleanup alter Einträge alle 10 Minuten
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, record] of loginAttempts.entries()) {
-    if (record.lockedUntil && now > record.lockedUntil) {
-      loginAttempts.delete(key)
-    }
-  }
-}, 10 * 60 * 1000)
-
-function getClientIdentifier(request: NextRequest): string {
-  // Kombination aus IP und User-Agent für bessere Erkennung
-  const ip = request.headers.get('x-forwarded-for') || 
-             request.headers.get('x-real-ip') || 
-             'unknown'
-  const userAgent = request.headers.get('user-agent') || 'unknown'
-  return `${ip}_${userAgent.slice(0, 50)}`
-}
-
-function checkRateLimit(identifier: string): { allowed: boolean; remaining?: number; lockoutMinutes?: number } {
-  const now = Date.now()
-  const record = loginAttempts.get(identifier)
-  
-  if (!record) {
-    return { allowed: true }
-  }
-  
-  // Prüfen ob noch gesperrt
-  if (record.lockedUntil && now < record.lockedUntil) {
-    const remainingMinutes = Math.ceil((record.lockedUntil - now) / 60000)
-    return { allowed: false, lockoutMinutes: remainingMinutes }
-  }
-  
-  // Sperre aufheben wenn Zeit abgelaufen
-  if (record.lockedUntil && now >= record.lockedUntil) {
-    loginAttempts.delete(identifier)
-    return { allowed: true }
-  }
-  
-  return { allowed: true, remaining: MAX_ATTEMPTS - record.count }
-}
-
-function recordFailedAttempt(identifier: string): void {
-  const now = Date.now()
-  const record = loginAttempts.get(identifier)
-  
-  if (!record) {
-    loginAttempts.set(identifier, {
-      count: 1,
-      firstAttempt: now
-    })
-    return
-  }
-  
-  record.count++
-  
-  if (record.count >= MAX_ATTEMPTS) {
-    record.lockedUntil = now + LOCKOUT_DURATION
-  }
-}
-
-function clearAttempts(identifier: string): void {
-  loginAttempts.delete(identifier)
-}
+const loginAttempts: Record<string, number> = {}
+const lockedIPs: Record<string, number> = {}
 
 export async function POST(request: NextRequest) {
-  const clientId = getClientIdentifier(request)
-  
   try {
-    // Rate Limiting prüfen
-    const rateCheck = checkRateLimit(clientId)
-    if (!rateCheck.allowed) {
-      return NextResponse.json(
-        { 
-          error: 'Zu viele fehlgeschlagene Versuche.',
-          lockoutMinutes: rateCheck.lockoutMinutes 
-        },
-        { status: 429 }
-      )
-    }
-
     const { email, password } = await request.json()
-
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'E-Mail und Passwort erforderlich' },
-        { status: 400 }
-      )
+    
+    // IP ermitteln
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+               request.headers.get('x-real-ip') || 
+               'unknown'
+    
+    // Prüfen ob IP gesperrt ist
+    if (lockedIPs[ip]) {
+      const now = Date.now()
+      if (now < lockedIPs[ip]) {
+        const mins = Math.ceil((lockedIPs[ip] - now) / 60000)
+        return NextResponse.json(
+          { error: `Zu viele Versuche. Bitte warten Sie ${mins} Minuten.` },
+          { status: 429 }
+        )
+      } else {
+        delete lockedIPs[ip]
+        delete loginAttempts[ip]
+      }
     }
-
-    // Auto-detect: erst Admin, dann CareHome
-    let user = await prisma.admin.findUnique({
-      where: { email: email.toLowerCase() }
-    })
+    
+    if (!email || !password) {
+      return NextResponse.json({ error: 'E-Mail und Passwort erforderlich' }, { status: 400 })
+    }
+    
+    // User suchen
+    let user = await prisma.admin.findUnique({ where: { email: email.toLowerCase() } })
     let role = 'admin'
-
     if (!user) {
-      user = await prisma.careHome.findUnique({
-        where: { email: email.toLowerCase() }
-      })
+      user = await prisma.careHome.findUnique({ where: { email: email.toLowerCase() } })
       role = 'careHome'
     }
-
-    if (!user || !await bcrypt.compare(password, user.passwordHash)) {
-      recordFailedAttempt(clientId)
-      const remainingAttempts = MAX_ATTEMPTS - (loginAttempts.get(clientId)?.count || 0)
+    
+    // Passwort prüfen
+    const valid = user && await bcrypt.compare(password, user.passwordHash)
+    
+    if (!valid) {
+      loginAttempts[ip] = (loginAttempts[ip] || 0) + 1
+      
+      if (loginAttempts[ip] >= MAX_ATTEMPTS) {
+        lockedIPs[ip] = Date.now() + LOCKOUT_DURATION
+        return NextResponse.json(
+          { error: 'Zu viele fehlgeschlagene Versuche. Account für 30 Minuten gesperrt.' },
+          { status: 429 }
+        )
+      }
       
       return NextResponse.json(
-        { 
-          error: 'Ungültige Anmeldedaten',
-          remainingAttempts: Math.max(0, remainingAttempts)
-        },
+        { error: `Ungültige Anmeldedaten. Versuch ${loginAttempts[ip]}/${MAX_ATTEMPTS}` },
         { status: 401 }
       )
     }
-
-    // Erfolgreicher Login: Rate Limit zurücksetzen
-    clearAttempts(clientId)
-
-    // JWT Token erstellen
+    
+    // Erfolg - zurücksetzen
+    delete loginAttempts[ip]
+    delete lockedIPs[ip]
+    
     const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!)
-    const token = await new SignJWT({
-      userId: user.id,
-      email: user.email,
-      role
-    })
+    const token = await new SignJWT({ userId: user.id, email, role })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('24h')
       .sign(secret)
-
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        role,
-        name: user.name || user.contactPerson || user.email
-      }
+    
+    const response = NextResponse.json({ success: true, user: { email, role } })
+    response.cookies.set('session', token, { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: 'lax', 
+      maxAge: 86400, 
+      path: '/' 
     })
-
-    response.cookies.set('session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24,
-      path: '/',
-    })
-
+    
     return response
+    
   } catch (error) {
     console.error('Login error:', error)
-    return NextResponse.json(
-      { error: 'Interner Serverfehler' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Serverfehler' }, { status: 500 })
   }
 }
