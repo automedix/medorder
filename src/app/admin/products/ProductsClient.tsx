@@ -37,6 +37,15 @@ export default function ProductsClient() {
     unit: 'Stück',
     categoryId: ''
   })
+  
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    articleNumber: '',
+    unit: 'Stück',
+    categoryId: ''
+  })
 
   useEffect(() => {
     fetchData()
@@ -153,6 +162,57 @@ export default function ProductsClient() {
       } else {
         const data = await res.json()
         setError(data.error || 'Fehler beim Löschen')
+      }
+    } catch (err) {
+      setError('Verbindungsfehler')
+    }
+  }
+
+  const startEdit = (product: Product) => {
+    setEditingProduct(product)
+    setEditForm({
+      name: product.name,
+      description: product.description || '',
+      articleNumber: product.articleNumber || '',
+      unit: product.unit,
+      categoryId: product.category?.id || ''
+    })
+  }
+
+  const cancelEdit = () => {
+    setEditingProduct(null)
+    setEditForm({
+      name: '',
+      description: '',
+      articleNumber: '',
+      unit: 'Stück',
+      categoryId: ''
+    })
+  }
+
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingProduct) return
+    
+    setError('')
+    
+    try {
+      const res = await fetch(`/api/products/${editingProduct.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      })
+      
+      if (res.ok) {
+        setEditingProduct(null)
+        fetchData()
+        alert('Produkt erfolgreich aktualisiert!')
+      } else if (res.status === 401) {
+        setError('Nicht autorisiert. Bitte erneut anmelden.')
+        setTimeout(() => router.push('/login'), 2000)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Fehler beim Aktualisieren')
       }
     } catch (err) {
       setError('Verbindungsfehler')
@@ -349,18 +409,85 @@ export default function ProductsClient() {
                 <tbody className="divide-y divide-gray-200">
                   {products.map((product) => (
                     <tr key={product.id}>
-                      <td className="px-6 py-4 font-medium" style={{color: "#111827"}}>{product.name}</td>
-                      <td className="px-6 py-4" style={{color: "#4b5563"}}>{product.articleNumber || '-'}</td>
-                      <td className="px-6 py-4" style={{color: "#111827"}}>{product.category?.name || '-'}</td>
-                      <td className="px-6 py-4" style={{color: "#111827"}}>{product.unit}</td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleDeleteProduct(product.id, product.name)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          Löschen
-                        </button>
-                      </td>
+                      {editingProduct?.id === product.id ? (
+                        // Edit Mode
+                        <td colSpan={5} className="px-6 py-4 bg-blue-50">
+                          <form onSubmit={handleUpdateProduct} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                            <input
+                              type="text"
+                              placeholder="Produktname"
+                              value={editForm.name}
+                              onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                              className="border rounded-lg px-3 py-2 bg-white text-gray-900"
+                              required
+                            />
+                            <input
+                              type="text"
+                              placeholder="Artikelnr."
+                              value={editForm.articleNumber}
+                              onChange={(e) => setEditForm({...editForm, articleNumber: e.target.value})}
+                              className="border rounded-lg px-3 py-2 bg-white text-gray-900"
+                            />
+                            <select
+                              value={editForm.categoryId}
+                              onChange={(e) => setEditForm({...editForm, categoryId: e.target.value})}
+                              className="border rounded-lg px-3 py-2 bg-white text-gray-900"
+                              required
+                            >
+                              <option value="">Kategorie wählen</option>
+                              {categories.map((cat) => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                              ))}
+                            </select>
+                            <input
+                              type="text"
+                              placeholder="Einheit"
+                              value={editForm.unit}
+                              onChange={(e) => setEditForm({...editForm, unit: e.target.value})}
+                              className="border rounded-lg px-3 py-2 bg-white text-gray-900"
+                            />
+                            <div className="flex space-x-2">
+                              <button
+                                type="submit"
+                                className="bg-green-600 text-white rounded-lg px-3 py-2 hover:bg-green-700 text-sm"
+                              >
+                                Speichern
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelEdit}
+                                className="bg-gray-500 text-white rounded-lg px-3 py-2 hover:bg-gray-600 text-sm"
+                              >
+                                Abbrechen
+                              </button>
+                            </div>
+                          </form>
+                        </td>
+                      ) : (
+                        // View Mode
+                        <>
+                          <td className="px-6 py-4 font-medium" style={{color: "#111827"}}>{product.name}</td>
+                          <td className="px-6 py-4" style={{color: "#4b5563"}}>{product.articleNumber || '-'}</td>
+                          <td className="px-6 py-4" style={{color: "#111827"}}>{product.category?.name || '-'}</td>
+                          <td className="px-6 py-4" style={{color: "#111827"}}>{product.unit}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => startEdit(product)}
+                                className="text-blue-600 hover:text-blue-800 text-sm"
+                              >
+                                Bearbeiten
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(product.id, product.name)}
+                                className="text-red-600 hover:text-red-800 text-sm"
+                              >
+                                Löschen
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>
