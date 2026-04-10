@@ -4,7 +4,7 @@
 
 ## Empfohlene IONOS Produkte
 
-| Produkt | Preis/Monat | Empfohlung |
+| Produkt | Preis/Monat | Empfehlung |
 |---------|-------------|------------|
 | **Cloud Server S** | ~5 € | Minimum |
 | **Cloud Server M** | ~10 € | ✅ Empfohlen |
@@ -92,7 +92,7 @@ Falls du ein Git-Repository hast:
 # Auf Server
 apt install -y git
 cd /opt
-git clone DEIN-REPO-URL medorder
+git clone https://github.com/automedix/medorder.git medorder
 ```
 
 ---
@@ -103,34 +103,19 @@ git clone DEIN-REPO-URL medorder
 # Auf dem Server
 cd /opt/medorder
 
-# .env Datei erstellen
-cat > .env << 'EOF'
-# Datenbank (wird automatisch von docker-compose erstellt)
-DATABASE_URL=postgresql://postgres:postgres@db:5432/medorder?schema=public
-
-# NextAuth (ÄNDERN! Siehe Hinweis unten)
-NEXTAUTH_URL=http://DEINE-SERVER-IP:3000
-NEXTAUTH_SECRET=ein-sehr-langes-zufälliges-passwort-mindestens-32-zeichen-lang
-
-# E-Mail (IONOS Mail)
-SMTP_HOST=smtp.ionos.de
-SMTP_PORT=587
-SMTP_USER=praxis@deine-domain.de
-SMTP_PASSWORD=dein-ionos-email-passwort
-SMTP_FROM=praxis@deine-domain.de
-
-# Empfänger der Bestellungen
-ADMIN_EMAIL=praxis@hausaerzte-im-grillepark.online
-EOF
+# .env Datei erstellen (von .env.example kopieren und anpassen!)
+cp .env.example .env
+nano .env
 ```
 
-### 🔐 WICHTIG: NextAuth Secret generieren
+### 🔐 WICHTIG: Secrets generieren
 
 ```bash
-# Sicheren Schlüssel generieren
+# Sicheren Schlüssel für NEXTAUTH_SECRET generieren
 openssl rand -base64 32
 
-# Das Ergebnis in .env eintragen bei NEXTAUTH_SECRET
+# Sicheres Master-Passwort wählen
+# NICHT den Beispiel-Wert nutzen!
 ```
 
 ---
@@ -143,34 +128,23 @@ cd /opt/medorder
 # Container starten
 docker compose up -d
 
-# Warten bis DB bereit
-sleep 15
-
-# Datenbank migrieren
-docker compose exec app npx prisma migrate deploy
-
-# Seed-Daten einspielen
-docker compose exec app npm run db:seed
-
-# Status prüfen
-docker compose ps
-docker compose logs -f
+# oder bei manueller Installation:
+npm ci
+npx prisma migrate deploy
+npm run build
+pm2 start ecosystem.config.js
 ```
 
-**Fertig!** Die App läuft jetzt auf:
-- `http://DEINE-SERVER-IP:3000`
+**Fertig!** Die App läuft jetzt auf deinem Server.
 
 ---
 
-## Schritt 6: Domain & HTTPS (optional aber empfohlen)
+## Schritt 6: Domain & HTTPS
 
-### 6.1 Domain bei IONOS einrichten
+### 6.1 Domain einrichten
 
-1. In IONOS Control Panel → Domains
-2. DNS-Eintrag erstellen:
-   - **Typ:** A-Record
-   - **Hostname:** bestellung (oder medorder)
-   - **Wert:** Deine Server-IP
+1. Domain bei IONOS registrieren oder externe Domain nutzen
+2. DNS-A-Record auf deine Server-IP setzen
 3. Warten (kann bis zu 24h dauern)
 
 ### 6.2 HTTPS mit Let's Encrypt
@@ -179,72 +153,23 @@ docker compose logs -f
 # Nginx als Reverse Proxy installieren
 apt install -y nginx certbot python3-certbot-nginx
 
-# Nginx-Konfiguration
-cat > /etc/nginx/sites-available/medorder << 'EOF'
-server {
-    listen 80;
-    server_name bestellung.deine-domain.de;
-
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-EOF
-
-# Aktivieren
-ln -s /etc/nginx/sites-available/medorder /etc/nginx/sites-enabled/
-nginx -t
-systemctl reload nginx
-
-# SSL-Zertifikat erstellen
-certbot --nginx -d bestellung.deine-domain.de
+# Certbot ausführen
+certbot --nginx -d deine-domain.de
 
 # Firewall anpassen
 ufw allow 'Nginx Full'
-ufw delete allow 'Nginx HTTP'  # Nur HTTPS erlauben
 ```
 
 ### 6.3 .env aktualisieren
 
 ```bash
-# .env editieren
-nano /opt/medorder/.env
-
-# NEXTAUTH_URL ändern auf:
-NEXTAUTH_URL=https://bestellung.deine-domain.de
-
-# Container neustarten
-cd /opt/medorder
-docker compose down
-docker compose up -d
+# NEXTAUTH_URL auf HTTPS aktualisieren
+NEXTAUTH_URL=https://deine-domain.de
 ```
 
 ---
 
-## Schritt 7: IONOS Firewall freigeben
-
-Im IONOS Cloud Panel:
-
-1. **"Firewall"** → **"Bearbeiten"**
-2. Folgende Ports erlauben:
-   - **TCP 22** (SSH) – für dich
-   - **TCP 80** (HTTP) – für Let's Encrypt
-   - **TCP 443** (HTTPS) – für die App
-   - **TCP 3000** (nur wenn ohne Nginx/HTTPS)
-
----
-
-## Backup einrichten (wichtig!)
-
-### Automatisches tägliches Backup
+## Backup einrichten
 
 ```bash
 # Backup-Skript erstellen
@@ -253,61 +178,12 @@ cat > /opt/backup.sh << 'EOF'
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR=/opt/backups
 mkdir -p $BACKUP_DIR
-
-# Datenbank backup
 docker exec medorder-db-1 pg_dump -U postgres medorder | gzip > $BACKUP_DIR/medorder_$DATE.sql.gz
-
-# Alte Backups löschen (älter als 30 Tage)
 find $BACKUP_DIR -name "medorder_*.sql.gz" -mtime +30 -delete
 EOF
 
 chmod +x /opt/backup.sh
-
-# Cronjob einrichten (täglich um 3 Uhr)
 echo "0 3 * * * /opt/backup.sh" | crontab -
-```
-
----
-
-## Fehlerbehebung bei IONOS
-
-### Verbindung wird abgelehnt
-```bash
-# IONOS Firewall prüfen!
-# Im IONOS Cloud Panel → Firewall → Port 3000 freigeben
-```
-
-### E-Mails kommen nicht an (IONOS Mail)
-
-IONOS hat strenge Spam-Filter:
-
-```bash
-# Test im Container
-docker compose exec app node -e "
-const nodemailer = require('nodemailer');
-const t = nodemailer.createTransporter({
-  host: 'smtp.ionos.de',
-  port: 587,
-  auth: { user: 'deine@email.de', pass: 'deinpasswort' }
-});
-t.sendMail({
-  from: 'deine@email.de',
-  to: 'praxis@hausaerzte-im-grillepark.online',
-  subject: 'Test',
-  text: 'Test'
-}).then(() => console.log('OK')).catch(console.error);
-"
-```
-
-**Hinweis:** IONOS erfordert oft eine aktive Postfach-Nutzung bevor SMTP funktioniert.
-
-### Speicherplatz voll
-```bash
-# Prüfen
-df -h
-
-# Docker aufräumen
-docker system prune -a
 ```
 
 ---
@@ -317,20 +193,6 @@ docker system prune -a
 | Komponente | Kosten/Monat |
 |------------|-------------|
 | Cloud Server M | ~10 € |
-| Domain (optional) | ~1-15 € |
+| Domain | ~1-15 € |
 | SSL (Let's Encrypt) | 0 € |
-| E-Mail (IONOS Mail) | ~1-5 € |
-| **Gesamt** | **~11-30 €/Monat** |
-
----
-
-## Nächste Schritte
-
-1. ✅ IONOS Cloud Server bestellen
-2. ✅ SSH verbinden & Docker installieren
-3. ✅ Projekt hochladen
-4. ✅ `./deploy.sh` ausführen
-5. ✅ Domain einrichten (optional)
-6. ✅ HTTPS aktivieren (optional)
-
-Brauchst du Hilfe bei einem bestimmten Schritt?
+| **Gesamt** | **~11-25 €/Monat** |

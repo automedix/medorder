@@ -1,5 +1,19 @@
 # 🚀 MedOrder Deployment Guide
 
+## Vor dem Deployment
+
+1. **.env.example kopieren und anpassen:**
+   ```bash
+   cp .env.example .env
+   # Dann alle Werte in .env anpassen!
+   ```
+
+2. **Wichtige Änderungen in .env:**
+   - `NEXTAUTH_SECRET`: Generiere mit `openssl rand -base64 32`
+   - `MASTER_PASSWORD`: Setze ein sicheres Passwort
+   - `NEXTAUTH_URL`: Deine Domain
+   - `ADMIN_EMAIL`: Deine Admin-E-Mail
+
 ## Schnell-Deploy (manuell)
 
 ```bash
@@ -34,35 +48,16 @@ chmod +x deploy.sh
 
 1. **Secrets in Repository eintragen:**
    - `NEXTAUTH_SECRET` - JWT Secret
-   - `DATABASE_URL` - PostgreSQL URL (oder SQLite Pfad)
+   - `DATABASE_URL` - PostgreSQL URL
    - `SSH_HOST` - Server IP/Domain
    - `SSH_USER` - Server User
-   - `SSH_PRIVATE_KEY` - SSH Key für Deployment
+   - `SSH_PRIVATE_KEY` - SSH Key
 
 2. **Push auf main** → Auto-Deploy startet
-
-## Manuelle Änderungen deployen
-
-### Nur Masterpasswort geändert?
-Nur die Datenbank braucht das Update - kein Restart nötig (außer bei .env Änderungen).
-
-### Code-Änderungen?
-```bash
-npm run build
-pm2 restart medorder
-```
-
-### Datenbank-Schema geändert?
-```bash
-npx prisma migrate deploy
-npm run build
-pm2 restart medorder
-```
 
 ## Troubleshooting
 
 **Fehler: "database is locked"**
-→ PM2 stoppen, dann Migration, dann starten:
 ```bash
 pm2 stop medorder
 npx prisma migrate deploy
@@ -70,14 +65,12 @@ pm2 start medorder
 ```
 
 **Fehler: "Module not found"**
-→ Dependencies neu installieren:
 ```bash
 rm -rf node_modules
 npm ci
 ```
 
 **Build-Fehler**
-→ TypeScript-Prüfung überspringen (nur im Notfall):
 ```bash
 NEXT_TELEMETRY_DISABLED=1 npm run build
 ```
